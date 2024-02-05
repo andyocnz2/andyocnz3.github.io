@@ -3,14 +3,14 @@
 <head>
     <title>Demo</title>
     <script>
-        // Function to check the password
+       
         function checkPassword() {
             var inputPassword = document.getElementById("passwordInput").value;
             var hashedInput = md5(inputPassword);
 
-            // Array of some hashes (only one is correct, others are dummy)
+         
             var hashes = ["d41d8cd98f00b204e9800998ecf8427e", "f85e24e8e107c69d5e6024a8894dc106", "06d80eb0c50b49a509b49f2424e8c805"];
-            var correctHashIndex = 1; // Index of the correct hash in the array
+            var correctHashIndex = 1; 
             
             if (hashedInput === hashes[correctHashIndex]) {
                 document.getElementById("protectedContent").style.display = 'block';
@@ -20,7 +20,7 @@
             }
         }
 
-        // Scripts to discourage viewing source code
+        
         document.addEventListener('contextmenu', function(e) {
             e.preventDefault();
         });
@@ -43,9 +43,9 @@
     </div>
     
     <div id="protectedContent" style="display:none;">
-        <!-- Your sensitive content goes here -->
+        
         <h1>Sample report</h1>
-        <p>https://app.powerbi.com/view?r=eyJrIjoiMDA5OWQ0OTYtN2UwNy00NmJjLWE5YjctM2NiOWJlYTlmNTRmIiwidCI6ImUxYzgwNDY5LWE3YWEtNDgyYS04ZDgxLWQ3MTViNWNiMmYzNiJ9</p>
+        <p><iframe title="ManUp survey v1" width="600" height="373.5" src="https://app.powerbi.com/view?r=eyJrIjoiMDA5OWQ0OTYtN2UwNy00NmJjLWE5YjctM2NiOWJlYTlmNTRmIiwidCI6ImUxYzgwNDY5LWE3YWEtNDgyYS04ZDgxLWQ3MTViNWNiMmYzNiJ9" frameborder="0" allowFullScreen="true"></iframe></p>
     </div>
 </body>
 </html>
