@@ -4,87 +4,20 @@
     <title>Pbiwise.com Demo Page</title>
       <link rel="icon" href="images/favicon.png" type="image/png" sizes="any">
     <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #f4f4f4;
-        }
-        #passwordPrompt {
-            text-align: center;
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        #passwordInput {
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            width: calc(100% - 22px);
-        }
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            background-color: #0e4c92;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0b2d61;
-        }
-        #protectedContent {
-            display: none;
-            margin-top: 20px;
-        }
-    </style>
+    <style>body{font-family:Arial,sans-serif;margin:0;height:100vh;display:flex;justify-content:center;align-items:center;background:#f4f4f4}#InputPrompt{width:320px;padding:40px;text-align:center;background:#fff;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,.1);display:flex;flex-direction:column;justify-content:center;align-items:center;margin-bottom:20px}#InputPrompt img{margin-bottom:20px}#UserInput{width:100%;max-width:260px;padding:12px;margin-bottom:20px;border:1px solid #ddd;border-radius:5px}.button-container{width:100%;display:flex;justify-content:center}button{width:50%;max-width:130px;padding:12px;border:none;border-radius:5px;background-color:#0e4c92;color:#fff;cursor:pointer;transition:background-color .3s}button:hover{background-color:#0b2d61}#InputContent{display:none;width:960px;height:580px;position:relative;overflow:hidden;margin:auto}</style>
+ 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.18.0/js/md5.min.js"></script>
-    <script>
-        function checkPassword() {
-            var inputPassword = document.getElementById("passwordInput").value;
-            var hashedInput = md5(inputPassword);
-
-            var hashes = ["d41d8cd98f00b204e9800998ecf8427e", "f85e24e8e107c69d5e6024a8894dc106", "06d80eb0c50b49a509b49f2424e8c805"];
-            var correctHashIndex = 1;
-
-            if (hashedInput === hashes[correctHashIndex]) {
-                document.getElementById("protectedContent").style.display = 'block';
-                document.getElementById("passwordPrompt").style.display = 'none';
-            } else {
-                alert("Incorrect password. Please try again.");
-            }
-        }
-
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.key === 'S' || e.key === 's')) {
-                e.preventDefault();
-            }
-            if (e.key === 'F12') {
-                e.preventDefault();
-            }
-        });
-    </script>
+    <script src="bootstrap.js"> </script>
 </head>
 <body>
-    <div id="passwordPrompt">
-        <img src="https://pbiwise.com/images/demo-slick/logo-dark.svg" width ="100px" alt="Logo" class="login-logo">
-        <input type="password" id="passwordInput" placeholder="Enter password">
-        <button onclick="checkPassword()">Submit</button>
+    <div id="InputPrompt">
+        <img src="https://pbiwise.com/images/demo-slick/logo-dark.svg" width ="100px" alt="Logo" class="login-logo"><br>
+        <input type="password" id="UserInput" placeholder="Enter "><br>
+        <button onclick="vreport()">Submit</button>
     </div>
-    
-    <div id="protectedContent" style="display:none;">
-        <h1>Sample report</h1>
-        <p><iframe title="ManUp survey v1" width="1280" height="820" src="https://app.powerbi.com/view?r=eyJrIjoiMDA5OWQ0OTYtN2UwNy00NmJjLWE5YjctM2NiOWJlYTlmNTRmIiwidCI6ImUxYzgwNDY5LWE3YWEtNDgyYS04ZDgxLWQ3MTViNWNiMmYzNiJ9" frameborder="0" allowFullScreen="true"></iframe></p>
+
+    <div id="InputContent" style="display:none; width: 960px; height: 580px; position: relative; overflow: hidden; margin: auto;">
+        <!-- The iframe will be dynamically inserted here -->
     </div>
 </body>
 </html>
