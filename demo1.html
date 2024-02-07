@@ -4,7 +4,7 @@
     <title>Pbiwise.com Demo Page</title>
       <link rel="icon" href="images/favicon.png" type="image/png" sizes="any">
     <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
-    <style>body{font-family:Arial,sans-serif;margin:0;height:100vh;display:flex;justify-content:center;align-items:center;background:#f4f4f4}#passwordPrompt{width:320px;padding:40px;text-align:center;background:#fff;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,.1);display:flex;flex-direction:column;justify-content:center;align-items:center;margin-bottom:20px}#passwordPrompt img{margin-bottom:20px}#passwordInput{width:100%;max-width:260px;padding:12px;margin-bottom:20px;border:1px solid #ddd;border-radius:5px}.button-container{width:100%;display:flex;justify-content:center}button{width:50%;max-width:130px;padding:12px;border:none;border-radius:5px;background-color:#0e4c92;color:#fff;cursor:pointer;transition:background-color .3s}button:hover{background-color:#0b2d61}#protectedContent{display:none;width:960px;height:580px;position:relative;overflow:hidden;margin:auto}</style>
+    <style>body{font-family:Arial,sans-serif;margin:0;height:100vh;display:flex;justify-content:center;align-items:center;background:#f4f4f4}#InputPrompt{width:320px;padding:40px;text-align:center;background:#fff;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,.1);display:flex;flex-direction:column;justify-content:center;align-items:center;margin-bottom:20px}#InputPrompt img{margin-bottom:20px}#UserInput{width:100%;max-width:260px;padding:12px;margin-bottom:20px;border:1px solid #ddd;border-radius:5px}.button-container{width:100%;display:flex;justify-content:center}button{width:50%;max-width:130px;padding:12px;border:none;border-radius:5px;background-color:#0e4c92;color:#fff;cursor:pointer;transition:background-color .3s}button:hover{background-color:#0b2d61}#InputContent{display:none;width:960px;height:580px;position:relative;overflow:hidden;margin:auto}</style>
 
     
     
@@ -12,16 +12,16 @@
     <script src="bootstrap.js"> </script>
 </head>
 <body>
-    <div id="passwordPrompt">
+    <div id="InputPrompt">
         <img src="https://pbiwise.com/images/demo-slick/logo-dark.svg" width ="100px" alt="Logo" class="login-logo"><br>
-        <input type="password" id="passwordInput" placeholder="Enter password"><br>
+        <input type="password" id="UserInput" placeholder="Enter "><br>
         <button onclick="vreport()">Submit</button>
     </div>
     
 
     
-    <div id="protectedContent" style="display:none; width: 960px; height: 580px; position: relative; overflow: hidden; margin: auto;">
-       
+    <div id="InputContent" style="display:none; width: 960px; height: 580px; position: relative; overflow: hidden; margin: auto;">
+        <!-- The iframe will be dynamically inserted here -->
     </div>
 </body>
 </html>
