@@ -7,7 +7,19 @@ You can find the code of your language here - https://www.w3schools.com/tags/ref
         <title>PBIwise.com &mdash;Power BI & Data-as-a-Service!</title>
         <meta name="description" content="PBIwise.com  &mdash; Power BI & Data-as-a-Service! - Empowering SMEs with Cost-Efficient and Agile Data Intelligence">  
         <meta charset="utf-8">
-       
+       <script>// Prevent right-click menu
+document.addEventListener('contextmenu', function(e) {
+  e.preventDefault();
+}, false);
+
+// Prevent Ctrl+U
+document.addEventListener('keydown', function(e) {
+  // keyCode 85 = 'U', 17 = 'Ctrl'
+  if (e.ctrlKey && e.keyCode === 85) {
+    e.preventDefault();
+  }
+}, false);
+       </script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         
         <!-- Favicon -->
