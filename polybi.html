@@ -10,6 +10,60 @@
             padding: 0;
             box-sizing: border-box;
         }
+
+        function drawSVGShapes() {
+            if (svgPolygons.length === 0) return;
+
+            svgPolygons.forEach((shape, index) => {
+                if (shape.points.length < 2) return;
+
+                // Use a distinct color scheme for SVG shapes
+                const svgColors = ['#8e44ad', '#d35400', '#16a085', '#2980b9', '#c0392b', '#f39c12'];
+                const color = svgColors[index % svgColors.length];
+                
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2 / viewScale;
+                
+                // Different styling based on shape type
+                if (shape.type === 'polygon' || (shape.type === 'path' && shape.points.length >= 3)) {
+                    // Fill closed shapes
+                    ctx.fillStyle = color + '30'; // More transparent
+                    ctx.beginPath();
+                    ctx.moveTo(shape.points[0].x, shape.points[0].y);
+                    for (let i = 1; i < shape.points.length; i++) {
+                        ctx.lineTo(shape.points[i].x, shape.points[i].y);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                } else {
+                    // Just stroke for polylines and open paths
+                    ctx.beginPath();
+                    ctx.moveTo(shape.points[0].x, shape.points[0].y);
+                    for (let i = 1; i < shape.points.length; i++) {
+                        ctx.lineTo(shape.points[i].x, shape.points[i].y);
+                    }
+                    ctx.stroke();
+                }
+
+                // Add label
+                const centerX = shape.points.reduce((sum, p) => sum + p.x, 0) / shape.points.length;
+                const centerY = shape.points.reduce((sum, p) => sum + p.y, 0) / shape.points.length;
+                
+                ctx.fillStyle = color;
+                ctx.font = `bold ${12 / viewScale}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText(`SVG ${index + 1}`, centerX, centerY);
+
+                // Draw small dots at vertices for reference
+                shape.points.forEach((point, pointIndex) => {
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 3 / viewScale, 0, 2 * Math.PI);
+                    ctx.fill();
+                });
+            });
+        }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
