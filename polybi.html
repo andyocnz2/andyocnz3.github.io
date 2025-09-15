@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polygon Builder for Power BI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .main {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .canvas-section {
+            flex: 1;
+            position: relative;
+            background: white;
+            border-right: 2px solid #ddd;
+        }
+
+        .controls-section {
+            width: 320px;
+            background: white;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #drawCanvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            display: block;
+        }
+
+        .canvas-buttons {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .canvas-buttons button {
+            width: 45px;
+            height: 35px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(44, 62, 80, 0.9);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .canvas-buttons button:hover {
+            background: rgba(44, 62, 80, 1);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+
+        .control-group h3 {
+            margin-bottom: 12px;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            margin: 2px;
+            transition: background 0.2s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        #coordinateTextarea {
+            width: 100%;
+            height: 80px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        #outputCoords {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 12px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            max-height: 120px;
+            overflow-y: auto;
+            word-break: break-all;
+            white-space: pre-wrap;
+            margin-top: 10px;
+        }
+
+        .status-bar {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: 500;
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .info-panel {
+            background: #e9ecef;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Complex Polygon Builder</h1>
+        <p>Draw polygons and export coordinates for Power BI Synoptic Designer</p>
+    </div>
+
+    <div class="main">
+        <div class="canvas-section">
+            <div class="canvas-buttons">
+                <button onclick="zoomIn()" title="Zoom In">+</button>
+                <button onclick="zoomOut()" title="Zoom Out">-</button>
+                <button onclick="resetView()" title="Reset View">⌂</button>
+                <button onclick="toggleGrid()" title="Toggle Grid">#</button>
+            </div>
+            <canvas id="drawCanvas"></canvas>
+        </div>
+
+        <div class="controls-section">
+            <div class="status-bar" id="statusMessage">
+                Click on canvas to start drawing polygon
+            </div>
+
+            <div class="control-group">
+                <h3>Background Image</h3>
+                <input type="file" id="imageInput" accept="image/*">
+                <button class="btn-secondary" onclick="removeImage()">Remove Image</button>
+            </div>
+
+            <div class="control-group">
+                <h3>Load Existing Areas</h3>
+                <textarea id="coordinateTextarea" placeholder="Paste existing coordinate strings here, one per line"></textarea>
+                <button class="btn-primary" onclick="loadExistingAreas()">Load Areas</button>
+                <button class="btn-secondary" onclick="clearExistingAreas()">Clear Areas</button>
+            </div>
+
+            <div class="control-group">
+                <h3>Drawing Controls</h3>
+                <button class="btn-success" onclick="finishPolygon()">Finish Polygon</button>
+                <button class="btn-secondary" onclick="undoLastPoint()">Undo Last Point</button>
+                <button class="btn-danger" onclick="clearCurrentPolygon()">Clear Polygon</button>
+            </div>
+
+            <div class="control-group">
+                <h3>Export Coordinates</h3>
+                <button class="btn-primary" onclick="copyToClipboard()">Copy to Clipboard</button>
+                <button class="btn-secondary" onclick="downloadFile()">Download as File</button>
+                
+                <div id="outputCoords">Coordinates will appear here...</div>
+            </div>
+
+            <div class="control-group">
+                <h3>Information</h3>
+                <div class="info-panel" id="infoPanel">
+                    Points: 0<br>
+                    Status: Ready<br>
+                    Zoom: 100%
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get DOM elements
+        const canvas = document.getElementById('drawCanvas');
+        const ctx = canvas.getContext('2d');
+        const statusEl = document.getElementById('statusMessage');
+        const infoEl = document.getElementById('infoPanel');
+        const outputEl = document.getElementById('outputCoords');
+        const imageInput = document.getElementById('imageInput');
+        const coordTextarea = document.getElementById('coordinateTextarea');
+
+        // Application state
+        let currentPoints = [];
+        let existingAreas = [];
+        let isPolygonFinished = false;
+        let backgroundImg = null;
+        let showGrid = true;
+
+        // View state
+        let viewScale = 1;
+        let viewOffsetX = 0;
+        let viewOffsetY = 0;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        // Initialize application
+        function initApp() {
+            setupCanvas();
+            setupEventListeners();
+            draw();
+            updateInfo();
+        }
+
+        function setupCanvas() {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+        }
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            draw();
+        }
+
+        function setupEventListeners() {
+            // Canvas click for adding points
+            canvas.addEventListener('click', handleCanvasClick);
+            
+            // Zoom with mouse wheel
+            canvas.addEventListener('wheel', handleWheelZoom);
+            
+            // Pan with mouse drag
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('mouseleave', handleMouseUp);
+            
+            // Image upload
+            imageInput.addEventListener('change', handleImageUpload);
+            
+            // Prevent context menu
+            canvas.addEventListener('contextmenu', e => e.preventDefault());
+        }
+
+        // Helper function to calculate distance between two points
+        function getDistance(p1, p2) {
+            return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+        }
+
+        // Helper function to check if click is near first point (for closing polygon)
+        function isNearFirstPoint(canvasX, canvasY) {
+            if (currentPoints.length < 3) return false;
+            
+            const firstPoint = currentPoints[0];
+            const firstPointCanvas = {
+                x: firstPoint.x * viewScale + viewOffsetX,
+                y: firstPoint.y * viewScale + viewOffsetY
+            };
+            
+            const clickDistance = getDistance(
+                { x: canvasX, y: canvasY },
+                firstPointCanvas
+            );
+            
+            // Close zone radius - larger for easier clicking
+            return clickDistance <= 25; // 25 pixels radius in screen space
+        }
+
+        function handleCanvasClick(e) {
+            if (isDragging || isPolygonFinished) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const canvasX = e.clientX - rect.left;
+            const canvasY = e.clientY - rect.top;
+
+            // Check if clicking near first point to close polygon
+            if (isNearFirstPoint(canvasX, canvasY)) {
+                if (currentPoints.length >= 3) {
+                    isPolygonFinished = true;
+                    updateCoordinateOutput();
+                    draw();
+                    updateInfo();
+                    updateStatus('Polygon closed! Coordinates ready for export.');
+                    return;
+                }
+            }
+
+            // Convert to world coordinates
+            const worldX = Math.round((canvasX - viewOffsetX) / viewScale);
+            const worldY = Math.round((canvasY - viewOffsetY) / viewScale);
+
+            currentPoints.push({ x: worldX, y: worldY });
+            updateCoordinateOutput();
+            draw();
+            updateInfo();
+            
+            if (currentPoints.length >= 3) {
+                updateStatus(`Added point ${currentPoints.length}. Click near the first point to close polygon or continue adding points.`);
+            } else {
+                updateStatus(`Added point ${currentPoints.length}. Need at least 3 points to close polygon.`);
+            }
+        }
+
+        function handleWheelZoom(e) {
+            e.preventDefault();
+            
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+            const newScale = Math.max(0.1, Math.min(5, viewScale * zoomFactor));
+
+            if (newScale !== viewScale) {
+                const scaleFactor = newScale / viewScale;
+                viewOffsetX = mouseX - (mouseX - viewOffsetX) * scaleFactor;
+                viewOffsetY = mouseY - (mouseY - viewOffsetY) * scaleFactor;
+                viewScale = newScale;
+                draw();
+                updateInfo();
+            }
+        }
+
+        function handleMouseDown(e) {
+            if (e.button === 2 || e.ctrlKey) { // Right click or Ctrl+click
+                isDragging = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                canvas.style.cursor = 'grabbing';
+                e.preventDefault();
+            }
+        }
+
+        function handleMouseMove(e) {
+            if (isDragging) {
+                const deltaX = e.clientX - lastMouseX;
+                const deltaY = e.clientY - lastMouseY;
+                
+                viewOffsetX += deltaX;
+                viewOffsetY += deltaY;
+                
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                
+                draw();
+            }
+        }
+
+        function handleMouseUp() {
+            isDragging = false;
+            canvas.style.cursor = 'crosshair';
+        }
+
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    backgroundImg = img;
+                    
+                    // Auto-fit image
+                    const imgAspect = img.width / img.height;
+                    const canvasAspect = canvas.width / canvas.height;
+                    
+                    if (imgAspect > canvasAspect) {
+                        viewScale = (canvas.width * 0.8) / img.width;
+                    } else {
+                        viewScale = (canvas.height * 0.8) / img.height;
+                    }
+                    
+                    viewOffsetX = (canvas.width - img.width * viewScale) / 2;
+                    viewOffsetY = (canvas.height - img.height * viewScale) / 2;
+                    
+                    draw();
+                    updateInfo();
+                    updateStatus('Background image loaded successfully');
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Drawing functions
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.save();
+            ctx.translate(viewOffsetX, viewOffsetY);
+            ctx.scale(viewScale, viewScale);
+
+            // Draw background image
+            if (backgroundImg) {
+                ctx.globalAlpha = 0.7;
+                ctx.drawImage(backgroundImg, 0, 0);
+                ctx.globalAlpha = 1.0;
+            }
+
+            // Draw grid
+            if (showGrid) {
+                drawGrid();
+            }
+
+            // Draw existing areas
+            drawExistingAreas();
+
+            // Draw current polygon
+            drawCurrentPolygon();
+
+            ctx.restore();
+        }
+
+        function drawGrid() {
+            const gridSize = 50;
+            const startX = Math.floor(-viewOffsetX / viewScale / gridSize) * gridSize;
+            const startY = Math.floor(-viewOffsetY / viewScale / gridSize) * gridSize;
+            const endX = startX + (canvas.width / viewScale) + gridSize;
+            const endY = startY + (canvas.height / viewScale) + gridSize;
+
+            ctx.strokeStyle = '#f0f0f0';
+            ctx.lineWidth = 1 / viewScale;
+
+            for (let x = startX; x < endX; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, startY);
+                ctx.lineTo(x, endY);
+                ctx.stroke();
+            }
+
+            for (let y = startY; y < endY; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(startX, y);
+                ctx.lineTo(endX, y);
+                ctx.stroke();
+            }
+        }
+
+        function drawExistingAreas() {
+            const colors = ['#3498db', '#9b59b6', '#f39c12', '#1abc9c', '#34495e', '#e67e22'];
+            
+            existingAreas.forEach((area, index) => {
+                if (area.length < 3) return;
+
+                const color = colors[index % colors.length];
+                
+                ctx.fillStyle = color + '40';
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2 / viewScale;
+
+                ctx.beginPath();
+                ctx.moveTo(area[0].x, area[0].y);
+                for (let i = 1; i < area.length; i++) {
+                    ctx.lineTo(area[i].x, area[i].y);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Area label
+                const centerX = area.reduce((sum, p) => sum + p.x, 0) / area.length;
+                const centerY = area.reduce((sum, p) => sum + p.y, 0) / area.length;
+                
+                ctx.fillStyle = color;
+                ctx.font = `bold ${14 / viewScale}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText(`Area ${index + 1}`, centerX, centerY);
+            });
+        }
+
+        function drawCurrentPolygon() {
+            if (currentPoints.length === 0) return;
+
+            // Draw connecting lines and fill if polygon is finished
+            if (isPolygonFinished && currentPoints.length >= 3) {
+                // Draw filled polygon
+                ctx.fillStyle = 'rgba(231, 76, 60, 0.3)'; // More visible fill
+                ctx.strokeStyle = '#c0392b';
+                ctx.lineWidth = 3 / viewScale;
+                
+                ctx.beginPath();
+                ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
+                for (let i = 1; i < currentPoints.length; i++) {
+                    ctx.lineTo(currentPoints[i].x, currentPoints[i].y);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                
+                // Add "FINISHED" label in center
+                const centerX = currentPoints.reduce((sum, p) => sum + p.x, 0) / currentPoints.length;
+                const centerY = currentPoints.reduce((sum, p) => sum + p.y, 0) / currentPoints.length;
+                
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fillRect(centerX - 40 / viewScale, centerY - 10 / viewScale, 80 / viewScale, 20 / viewScale);
+                
+                ctx.fillStyle = '#c0392b';
+                ctx.font = `bold ${12 / viewScale}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText('FINISHED', centerX, centerY + 4 / viewScale);
+                
+            } else {
+                // Draw lines for unfinished polygon
+                ctx.strokeStyle = '#e74c3c';
+                ctx.lineWidth = 3 / viewScale;
+                
+                if (currentPoints.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
+                    for (let i = 1; i < currentPoints.length; i++) {
+                        ctx.lineTo(currentPoints[i].x, currentPoints[i].y);
+                    }
+                    ctx.stroke();
+                }
+                
+                // Draw dashed line from last point to first point if we have 3+ points
+                if (currentPoints.length >= 3) {
+                    ctx.setLineDash([8 / viewScale, 4 / viewScale]);
+                    ctx.strokeStyle = '#95a5a6';
+                    ctx.lineWidth = 2 / viewScale;
+                    ctx.beginPath();
+                    ctx.moveTo(currentPoints[currentPoints.length - 1].x, currentPoints[currentPoints.length - 1].y);
+                    ctx.lineTo(currentPoints[0].x, currentPoints[0].y);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+
+            // Draw points
+            currentPoints.forEach((point, index) => {
+                const radius = 8 / viewScale;
+                
+                // White background circle
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, radius + 2 / viewScale, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Colored center
+                if (isPolygonFinished) {
+                    ctx.fillStyle = '#c0392b';
+                } else {
+                    ctx.fillStyle = index === 0 ? '#e74c3c' : '#27ae60';
+                }
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Point number
+                ctx.fillStyle = 'white';
+                ctx.font = `bold ${10 / viewScale}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText((index + 1).toString(), point.x, point.y + 3 / viewScale);
+            });
+
+            // Highlight first point as close zone if we have 3+ points and polygon not finished
+            if (currentPoints.length >= 3 && !isPolygonFinished) {
+                const firstPoint = currentPoints[0];
+                const closeRadius = 25 / viewScale; // Matching the click detection radius
+                
+                // Draw close zone
+                ctx.fillStyle = 'rgba(46, 204, 113, 0.2)';
+                ctx.beginPath();
+                ctx.arc(firstPoint.x, firstPoint.y, closeRadius, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#2ecc71';
+                ctx.lineWidth = 2 / viewScale;
+                ctx.setLineDash([6 / viewScale, 3 / viewScale]);
+                ctx.beginPath();
+                ctx.arc(firstPoint.x, firstPoint.y, closeRadius, 0, 2 * Math.PI);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Add instruction text
+                ctx.fillStyle = '#2ecc71';
+                ctx.font = `bold ${11 / viewScale}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText('CLICK TO CLOSE', firstPoint.x, firstPoint.y - closeRadius - 8 / viewScale);
+            }
+        }
+
+        // Control functions
+        function loadExistingAreas() {
+            const text = coordTextarea.value.trim();
+            if (!text) {
+                updateStatus('No coordinate data to load');
+                return;
+            }
+
+            existingAreas = [];
+            const lines = text.split('\n');
+            
+            lines.forEach(line => {
+                line = line.trim();
+                if (line) {
+                    const coords = line.split(',').map(c => parseFloat(c.trim())).filter(n => !isNaN(n));
+                    if (coords.length >= 6) {
+                        const points = [];
+                        for (let i = 0; i < coords.length; i += 2) {
+                            if (i + 1 < coords.length) {
+                                points.push({ x: coords[i], y: coords[i + 1] });
+                            }
+                        }
+                        existingAreas.push(points);
+                    }
+                }
+            });
+
+            draw();
+            updateStatus(`Loaded ${existingAreas.length} existing areas`);
+        }
+
+        function clearExistingAreas() {
+            existingAreas = [];
+            coordTextarea.value = '';
+            draw();
+            updateStatus('Existing areas cleared');
+        }
+
+        function finishPolygon() {
+            if (currentPoints.length < 3) {
+                updateStatus('Need at least 3 points to finish polygon');
+                return;
+            }
+
+            isPolygonFinished = true;
+            updateCoordinateOutput();
+            draw();
+            updateInfo();
+            updateStatus('Polygon finished! Coordinates ready for export.');
+        }
+
+        function undoLastPoint() {
+            if (currentPoints.length === 0) return;
+            
+            currentPoints.pop();
+            if (currentPoints.length < 3) {
+                isPolygonFinished = false;
+            }
+            updateCoordinateOutput();
+            draw();
+            updateInfo();
+            updateStatus(currentPoints.length === 0 ? 'All points removed' : `Point removed. ${currentPoints.length} points remaining.`);
+        }
+
+        function clearCurrentPolygon() {
+            currentPoints = [];
+            isPolygonFinished = false;
+            updateCoordinateOutput();
+            draw();
+            updateInfo();
+            updateStatus('Polygon cleared. Click to start drawing.');
+        }
+
+        function removeImage() {
+            backgroundImg = null;
+            imageInput.value = '';
+            draw();
+            updateStatus('Background image removed');
+        }
+
+        function toggleGrid() {
+            showGrid = !showGrid;
+            draw();
+            updateStatus(`Grid ${showGrid ? 'enabled' : 'disabled'}`);
+        }
+
+        function zoomIn() {
+            viewScale = Math.min(viewScale * 1.2, 5);
+            draw();
+            updateInfo();
+        }
+
+        function zoomOut() {
+            viewScale = Math.max(viewScale / 1.2, 0.1);
+            draw();
+            updateInfo();
+        }
+
+        function resetView() {
+            viewScale = 1;
+            viewOffsetX = 0;
+            viewOffsetY = 0;
+            draw();
+            updateInfo();
+            updateStatus('View reset to default');
+        }
+
+        function updateCoordinateOutput() {
+            if (currentPoints.length === 0) {
+                outputEl.textContent = 'Coordinates will appear here...';
+                return;
+            }
+
+            let coords = '';
+            currentPoints.forEach((point, index) => {
+                if (index > 0) coords += ', ';
+                coords += `${point.x}, ${point.y}`;
+            });
+
+            // Close polygon if finished
+            if (isPolygonFinished && currentPoints.length > 0) {
+                coords += `, ${currentPoints[0].x}, ${currentPoints[0].y}`;
+            }
+
+            outputEl.textContent = coords;
+        }
+
+        function copyToClipboard() {
+            const coords = outputEl.textContent;
+            if (coords === 'Coordinates will appear here...') {
+                updateStatus('No coordinates to copy');
+                return;
+            }
+
+            navigator.clipboard.writeText(coords).then(() => {
+                updateStatus('Coordinates copied to clipboard successfully!');
+            }).catch(() => {
+                updateStatus('Failed to copy coordinates');
+            });
+        }
+
+        function downloadFile() {
+            const coords = outputEl.textContent;
+            if (coords === 'Coordinates will appear here...') {
+                updateStatus('No coordinates to download');
+                return;
+            }
+
+            const blob = new Blob([coords], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'polygon_coordinates.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            updateStatus('Coordinates downloaded successfully!');
+        }
+
+        function updateStatus(message) {
+            statusEl.textContent = message;
+        }
+
+        function updateInfo() {
+            infoEl.innerHTML = `
+                Points: ${currentPoints.length}<br>
+                Status: ${isPolygonFinished ? 'Finished' : 'Drawing'}<br>
+                Zoom: ${Math.round(viewScale * 100)}%
+            `;
+        }
+
+        // Start the application
+        initApp();
+    </script>
+</body>
+</html>
