@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Area Name Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .upload-section {
+            border: 3px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9ff;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+
+        .upload-section:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-section.dragover {
+            background: #e8ebff;
+            border-color: #764ba2;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .replace-section {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .replace-section.active {
+            display: block;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            width: 100px;
+            text-align: center;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .replace-btn, .download-btn, .view-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .replace-btn:hover, .download-btn:hover, .view-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+        }
+
+        .view-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .areas-section {
+            display: none;
+        }
+
+        .areas-section.active {
+            display: block;
+        }
+
+        .areas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .areas-header h2 {
+            color: #333;
+            font-size: 20px;
+        }
+
+        .count-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .areas-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .area-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .area-item:hover {
+            background: #f9fafb;
+        }
+
+        .area-item:last-child {
+            border-bottom: none;
+        }
+
+        .area-name {
+            font-family: 'Courier New', monospace;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .area-type {
+            font-size: 12px;
+            color: #6b7280;
+            background: #f3f4f6;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            border-left: 4px solid #10b981;
+        }
+
+        .success-message.active {
+            display: block;
+        }
+
+        .preview-section {
+            display: none;
+            margin-top: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            background: white;
+            max-height: 600px;
+            overflow: auto;
+        }
+
+        .preview-section.active {
+            display: block;
+        }
+
+        .preview-header {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .preview-header h3 {
+            color: #333;
+            font-size: 18px;
+        }
+
+        #svgPreview {
+            text-align: center;
+            min-height: 300px;
+        }
+
+        #svgPreview svg {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SVG Area Name Editor</h1>
+            <p>Upload your SVG and batch edit area names (id, class, data-name attributes)</p>
+        </div>
+
+        <div class="content">
+            <div class="upload-section" id="uploadSection">
+                <h3 style="margin-bottom: 20px; color: #333;">Drop your SVG file here or click to browse</h3>
+                <input type="file" id="fileInput" accept=".svg">
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    Choose SVG File
+                </button>
+                <p style="margin-top: 15px; color: #6b7280; font-size: 14px;">Works offline - Handles large files!</p>
+            </div>
+
+            <div class="success-message" id="successMessage">
+                Replacement completed successfully!
+            </div>
+
+            <div class="replace-section" id="replaceSection">
+                <div class="input-group">
+                    <label>Find Character:</label>
+                    <input type="text" id="findChar" maxlength="10" placeholder="e.g. ," value=",">
+
+                    <label>Replace With:</label>
+                    <input type="text" id="replaceChar" maxlength="10" placeholder="e.g. -" value="-">
+
+                    <button class="replace-btn" onclick="performReplace()">Apply Replacement</button>
+                    <button class="download-btn" onclick="downloadSVG()">Download Modified SVG</button>
+                    <button class="view-btn" onclick="openInNewTab()">Open in New Tab</button>
+                </div>
+            </div>
+
+            <div class="areas-section" id="areasSection">
+                <div class="stats" id="stats"></div>
+
+                <div class="areas-header">
+                    <h2>Areas Found</h2>
+                    <span class="count-badge" id="areaCount">0 areas</span>
+                </div>
+
+                <div class="areas-list" id="areasList"></div>
+
+                <div class="preview-section" id="previewSection">
+                    <div class="preview-header">
+                        <h3>SVG Preview</h3>
+                    </div>
+                    <div id="svgPreview"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let svgDoc = null;
+        let fileName = '';
+        let areas = [];
+
+        // File input handler
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                loadSVG(file);
+            }
+        });
+
+        // Drag and drop handlers
+        const uploadSection = document.getElementById('uploadSection');
+
+        uploadSection.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.svg')) {
+                loadSVG(file);
+            } else {
+                alert('Please drop a valid SVG file');
+            }
+        });
+
+        function loadSVG(file) {
+            fileName = file.name;
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const svgString = e.target.result;
+
+                // Parse with DOMParser to preserve namespaces
+                const parser = new DOMParser();
+                svgDoc = parser.parseFromString(svgString, 'image/svg+xml');
+
+                // Check for errors
+                if (svgDoc.getElementsByTagName('parsererror').length > 0) {
+                    alert('Error parsing SVG file');
+                    return;
+                }
+
+                parseSVG();
+                displayAreas();
+                showPreview();
+
+                document.getElementById('replaceSection').classList.add('active');
+                document.getElementById('areasSection').classList.add('active');
+            };
+
+            reader.readAsText(file);
+        }
+
+        function parseSVG() {
+            areas = [];
+
+            // Find all elements with id attribute
+            const elementsWithId = svgDoc.querySelectorAll('[id]');
+            elementsWithId.forEach(el => {
+                areas.push({
+                    type: 'id',
+                    attribute: 'id',
+                    name: el.getAttribute('id'),
+                    element: el.tagName
+                });
+            });
+
+            // Find all elements with class attribute
+            const elementsWithClass = svgDoc.querySelectorAll('[class]');
+            elementsWithClass.forEach(el => {
+                const classes = el.getAttribute('class').split(' ');
+                classes.forEach(className => {
+                    if (className.trim()) {
+                        areas.push({
+                            type: 'class',
+                            attribute: 'class',
+                            name: className.trim(),
+                            element: el.tagName
+                        });
+                    }
+                });
+            });
+
+            // Find all elements with inkscape:label
+            const elementsWithLabel = svgDoc.querySelectorAll('[inkscape\\:label]');
+            elementsWithLabel.forEach(el => {
+                areas.push({
+                    type: 'inkscape:label',
+                    attribute: 'inkscape:label',
+                    name: el.getAttribute('inkscape:label'),
+                    element: el.tagName
+                });
+            });
+
+            // Find all elements with data-name attribute
+            const elementsWithDataName = svgDoc.querySelectorAll('[data-name]');
+            elementsWithDataName.forEach(el => {
+                areas.push({
+                    type: 'data-name',
+                    attribute: 'data-name',
+                    name: el.getAttribute('data-name'),
+                    element: el.tagName
+                });
+            });
+        }
+
+        function displayAreas() {
+            const areasList = document.getElementById('areasList');
+            const areaCount = document.getElementById('areaCount');
+            const statsDiv = document.getElementById('stats');
+
+            areaCount.textContent = `${areas.length} areas`;
+
+            // Calculate stats
+            const uniqueNames = new Set(areas.map(a => a.name)).size;
+            const commaCount = areas.filter(a => a.name && a.name.includes(',')).length;
+
+            statsDiv.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${areas.length}</div>
+                    <div class="stat-label">Total Areas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${uniqueNames}</div>
+                    <div class="stat-label">Unique Names</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${commaCount}</div>
+                    <div class="stat-label">Names with Commas</div>
+                </div>
+            `;
+
+            areasList.innerHTML = '';
+
+            if (areas.length === 0) {
+                areasList.innerHTML = '<div class="area-item"><span class="area-name">No areas found with id, class, or label attributes</span></div>';
+                return;
+            }
+
+            areas.forEach(area => {
+                const item = document.createElement('div');
+                item.className = 'area-item';
+                item.innerHTML = `
+                    <span class="area-name">${escapeHtml(area.name || '')}</span>
+                    <span class="area-type">${area.attribute} (${area.element})</span>
+                `;
+                areasList.appendChild(item);
+            });
+        }
+
+        function performReplace() {
+            const findChar = document.getElementById('findChar').value;
+            const replaceChar = document.getElementById('replaceChar').value;
+
+            if (findChar === '') {
+                alert('Please enter a character to find');
+                return;
+            }
+
+            // Replace in specific attributes only (NOT in base64 data or other content)
+            const attributesToReplace = ['id', 'class', 'data-name', 'inkscape:label'];
+
+            attributesToReplace.forEach(attr => {
+                const elements = svgDoc.querySelectorAll(`[${attr}]`);
+                elements.forEach(el => {
+                    const currentValue = el.getAttribute(attr);
+                    if (currentValue) {
+                        const newValue = currentValue.replace(new RegExp(escapeRegex(findChar), 'g'), replaceChar);
+                        el.setAttribute(attr, newValue);
+                    }
+                });
+            });
+
+            // Update the displayed areas
+            parseSVG();
+            displayAreas();
+            showPreview();
+
+            // Show success message
+            const successMsg = document.getElementById('successMessage');
+            successMsg.classList.add('active');
+            setTimeout(() => {
+                successMsg.classList.remove('active');
+            }, 3000);
+        }
+
+        function showPreview() {
+            const previewSection = document.getElementById('previewSection');
+            const svgPreview = document.getElementById('svgPreview');
+
+            previewSection.classList.add('active');
+
+            // Get the SVG element and import it
+            const svgElement = svgDoc.documentElement;
+            const importedSvg = document.importNode(svgElement, true);
+
+            // Clear and display
+            svgPreview.innerHTML = '';
+            svgPreview.appendChild(importedSvg);
+        }
+
+        function downloadSVG() {
+            // Serialize using XMLSerializer
+            const serializer = new XMLSerializer();
+            const svgString = serializer.serializeToString(svgDoc);
+
+            // Create blob
+            const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+
+            // Download
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName.replace('.svg', '_modified.svg');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+        }
+
+        function openInNewTab() {
+            // Serialize using XMLSerializer
+            const serializer = new XMLSerializer();
+            const svgString = serializer.serializeToString(svgDoc);
+
+            // Create blob
+            const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+
+            // Open in new window
+            window.open(url, '_blank');
+        }
+
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
