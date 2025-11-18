@@ -521,10 +521,15 @@
             }
 
             // Replace in specific attributes only (NOT in base64 data or other content)
-            const attributesToReplace = ['id', 'class', 'data-name', 'inkscape:label'];
+            const attributesToReplace = [
+                { attr: 'id', selector: '[id]' },
+                { attr: 'class', selector: '[class]' },
+                { attr: 'data-name', selector: '[data-name]' },
+                { attr: 'inkscape:label', selector: '[inkscape\\:label]' }
+            ];
 
-            attributesToReplace.forEach(attr => {
-                const elements = svgDoc.querySelectorAll(`[${attr}]`);
+            attributesToReplace.forEach(({attr, selector}) => {
+                const elements = svgDoc.querySelectorAll(selector);
                 elements.forEach(el => {
                     const currentValue = el.getAttribute(attr);
                     if (currentValue) {
