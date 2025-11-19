@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Polygon Builder for Power BI</title>
+    <title>Multi-Area Auto-Detect Builder for Power BI</title>
+            <!-- Favicon -->
+        <link rel="icon" href="images/favicon.png" type="image/png" sizes="any">
+        <link rel="icon" href="images/favicon.svg" type="image/svg+xml">         
+
     <style>
         * {
             margin: 0;
@@ -11,60 +15,6 @@
             box-sizing: border-box;
         }
 
-        function drawSVGShapes() {
-            if (svgPolygons.length === 0) return;
-
-            svgPolygons.forEach((shape, index) => {
-                if (shape.points.length < 2) return;
-
-                // Use a distinct color scheme for SVG shapes
-                const svgColors = ['#8e44ad', '#d35400', '#16a085', '#2980b9', '#c0392b', '#f39c12'];
-                const color = svgColors[index % svgColors.length];
-                
-                ctx.strokeStyle = color;
-                ctx.lineWidth = 2 / viewScale;
-                
-                // Different styling based on shape type
-                if (shape.type === 'polygon' || (shape.type === 'path' && shape.points.length >= 3)) {
-                    // Fill closed shapes
-                    ctx.fillStyle = color + '30'; // More transparent
-                    ctx.beginPath();
-                    ctx.moveTo(shape.points[0].x, shape.points[0].y);
-                    for (let i = 1; i < shape.points.length; i++) {
-                        ctx.lineTo(shape.points[i].x, shape.points[i].y);
-                    }
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-                } else {
-                    // Just stroke for polylines and open paths
-                    ctx.beginPath();
-                    ctx.moveTo(shape.points[0].x, shape.points[0].y);
-                    for (let i = 1; i < shape.points.length; i++) {
-                        ctx.lineTo(shape.points[i].x, shape.points[i].y);
-                    }
-                    ctx.stroke();
-                }
-
-                // Add label
-                const centerX = shape.points.reduce((sum, p) => sum + p.x, 0) / shape.points.length;
-                const centerY = shape.points.reduce((sum, p) => sum + p.y, 0) / shape.points.length;
-                
-                ctx.fillStyle = color;
-                ctx.font = `bold ${12 / viewScale}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText(`SVG ${index + 1}`, centerX, centerY);
-
-                // Draw small dots at vertices for reference
-                shape.points.forEach((point, pointIndex) => {
-                    ctx.fillStyle = color;
-                    ctx.beginPath();
-                    ctx.arc(point.x, point.y, 3 / viewScale, 0, 2 * Math.PI);
-                    ctx.fill();
-                });
-            });
-        }
-        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f0f2f5;
@@ -85,6 +35,11 @@
             margin-bottom: 5px;
         }
 
+        .header p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
         .main {
             display: flex;
             flex: 1;
@@ -99,7 +54,7 @@
         }
 
         .controls-section {
-            width: 320px;
+            width: 360px;
             background: white;
             padding: 20px;
             overflow-y: auto;
@@ -108,7 +63,6 @@
         #drawCanvas {
             width: 100%;
             height: 100%;
-            cursor: crosshair;
             display: block;
         }
 
@@ -136,6 +90,9 @@
         .canvas-buttons button:hover {
             background: rgba(44, 62, 80, 1);
         }
+        .canvas-buttons button.active {
+            background: #e67e22;
+        }
 
         .control-group {
             margin-bottom: 20px;
@@ -143,6 +100,11 @@
             background: #f8f9fa;
             border-radius: 8px;
             border-left: 4px solid #3498db;
+        }
+
+        .control-group.highlight {
+            border-left-color: #e74c3c;
+            background: #fff5f5;
         }
 
         .control-group h3 {
@@ -159,6 +121,7 @@
             font-weight: 500;
             margin: 2px;
             transition: background 0.2s;
+            font-size: 13px;
         }
 
         .btn-primary {
@@ -197,29 +160,63 @@
             background: #7f8c8d;
         }
 
-        #coordinateTextarea {
-            width: 100%;
-            height: 80px;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+
+        .btn-info {
+            background: #16a085;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138d75;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 5px;
             margin-bottom: 10px;
         }
 
-        #outputCoords {
-            background: #2c3e50;
-            color: #ecf0f1;
-            padding: 12px;
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            max-height: 120px;
-            overflow-y: auto;
-            word-break: break-all;
-            white-space: pre-wrap;
-            margin-top: 10px;
+        .mode-selector button {
+            flex: 1;
+            padding: 12px 8px;
+            font-size: 12px;
+        }
+
+        .mode-selector button.active {
+            background: #e74c3c;
+            color: white;
+            font-weight: bold;
+        }
+
+        .slider-container {
+            margin: 10px 0;
+        }
+
+        .slider-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .slider-container input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .slider-value {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-align: right;
         }
 
         .status-bar {
@@ -229,14 +226,15 @@
             font-weight: 500;
             background: #d1ecf1;
             color: #0c5460;
+            font-size: 13px;
         }
 
         .info-panel {
             background: #e9ecef;
             padding: 12px;
             border-radius: 5px;
-            font-size: 14px;
-            line-height: 1.4;
+            font-size: 13px;
+            line-height: 1.6;
         }
 
         input[type="file"] {
@@ -245,13 +243,154 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .badge-new {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .badge-count {
+            background: #3498db;
+            color: white;
+        }
+
+        /* Area naming dialog */
+        .name-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 1000;
+            min-width: 350px;
+        }
+
+        .name-dialog h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .name-dialog input {
+            margin-bottom: 15px;
+        }
+
+        .name-dialog .buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        /* Area list */
+        .area-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+
+        .area-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s;
+        }
+
+        .area-item:hover {
+            background: #f8f9fa;
+        }
+
+        .area-item:last-child {
+            border-bottom: none;
+        }
+
+        .area-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .area-info {
+            flex: 1;
+            font-size: 13px;
+        }
+
+        .area-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .area-points {
+            font-size: 11px;
+            color: #7f8c8d;
+        }
+
+        .area-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .area-actions button {
+            padding: 5px 10px;
+            font-size: 11px;
+            margin: 0;
+        }
+
+        .export-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .export-options button {
+            flex: 1;
+            min-width: 100px;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Complex Polygon Builder</h1>
-        <p>Draw polygons and export coordinates for Power BI Synoptic Designer</p>
+        <h1>Multi-Area Auto-Detect Builder</h1>
+        <p>Detect, name, and export 200+ regions for Power BI Synoptic Designer</p>
     </div>
 
     <div class="main">
@@ -261,13 +400,23 @@
                 <button onclick="zoomOut()" title="Zoom Out">-</button>
                 <button onclick="resetView()" title="Reset View">⌂</button>
                 <button onclick="toggleGrid()" title="Toggle Grid">#</button>
+                <button id="selectToolBtn" onclick="activateSelectTool()" title="Select / Magic Wand">🖱</button>
+                <button id="panToggleBtn" onclick="togglePanMode()" title="Pan / Move Image">✋</button>
             </div>
             <canvas id="drawCanvas"></canvas>
         </div>
 
         <div class="controls-section">
             <div class="status-bar" id="statusMessage">
-                Click on canvas to start drawing polygon
+                Upload an image and select Magic Wand mode
+            </div>
+
+            <div class="control-group highlight">
+                <h3>Detection Mode <span class="badge badge-new">NEW</span></h3>
+                <div class="mode-selector">
+                    <button onclick="setMode('manual')" class="mode-btn" data-mode="manual">Manual</button>
+                    <button onclick="setMode('magic')" class="mode-btn" data-mode="magic">Magic Wand</button>
+                </div>
             </div>
 
             <div class="control-group">
@@ -276,36 +425,101 @@
                 <button class="btn-secondary" onclick="removeImage()">Remove Image</button>
             </div>
 
-            <div class="control-group">
-                <h3>Load Existing Areas</h3>
-                <textarea id="coordinateTextarea" placeholder="Paste existing coordinate strings here, one per line"></textarea>
-                <button class="btn-primary" onclick="loadExistingAreas()">Load Areas</button>
-                <button class="btn-secondary" onclick="clearExistingAreas()">Clear Areas</button>
+            <!-- Magic Wand Controls -->
+            <div class="control-group hidden" id="magicWandControls">
+                <h3>Magic Wand Settings</h3>
+                <div class="slider-container">
+                    <label>Color Tolerance</label>
+                    <input type="range" id="toleranceSlider" min="0" max="100" value="30" oninput="updateTolerance(this.value)">
+                    <div class="slider-value">Tolerance: <span id="toleranceValue">30</span></div>
+                </div>
+                <div class="slider-container">
+                    <label>Polygon Simplification</label>
+                    <input type="range" id="simplifySlider" min="0" max="10" value="2" step="0.5" oninput="updateSimplify(this.value)">
+                    <div class="slider-value">Epsilon: <span id="simplifyValue">2</span></div>
+                </div>
+                <p style="font-size: 12px; color: #7f8c8d; margin-top: 10px;">
+                    Click any region to detect boundary. You'll be prompted to name it.
+                </p>
             </div>
 
+
+            <!-- Manual Drawing Controls -->
             <div class="control-group">
-                <h3>Drawing Controls</h3>
-                <button class="btn-success" onclick="finishPolygon()">Finish Polygon</button>
+                <h3>Manual Drawing Controls</h3>
+                <button class="btn-success" onclick="finishManualPolygon()">Finish & Name Polygon</button>
                 <button class="btn-secondary" onclick="undoLastPoint()">Undo Last Point</button>
-                <button class="btn-danger" onclick="clearCurrentPolygon()">Clear Polygon</button>
+                <button class="btn-danger" onclick="clearCurrentPolygon()">Clear Current Drawing</button>
+                <p style="font-size: 12px; color: #7f8c8d; margin-top: 10px;">
+                    For manual mode: Click points, then finish to name
+                </p>
             </div>
 
+            <!-- Detected Areas List -->
             <div class="control-group">
-                <h3>Export Coordinates</h3>
-                <button class="btn-primary" onclick="copyToClipboard()">Copy to Clipboard</button>
-                <button class="btn-secondary" onclick="downloadFile()">Download as File</button>
-                
-                <div id="outputCoords">Coordinates will appear here...</div>
+                <h3>Detected Areas <span class="badge badge-count" id="areaCount">0</span></h3>
+                <div class="area-list" id="areaList">
+                    <div style="padding: 20px; text-align: center; color: #7f8c8d; font-size: 13px;">
+                        No areas detected yet
+                    </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <button class="btn-danger" onclick="clearAllAreas()" style="width: 100%;">Clear All Areas</button>
+                </div>
+            </div>
+
+            <!-- Area Name Tools -->
+            <div class="control-group">
+                <h3>Area Name Tools</h3>
+                <div id="nameIssuesSummary" style="font-size: 12px; color: #7f8c8d; margin-bottom: 8px;">
+                    Scan names to check for special characters or characters to replace.
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
+                    <input type="text" id="nameFindInput" placeholder="Find" maxlength="10" style="width: 60px; font-size: 12px;">
+                    <span style="font-size: 12px;">→</span>
+                    <input type="text" id="nameReplaceInput" placeholder="Replace" maxlength="10" style="width: 60px; font-size: 12px;">
+                    <button class="btn-secondary" style="flex: 1; min-width: 120px;" onclick="replaceInAreaNames()">
+                        Replace in Names
+                    </button>
+                </div>
+                <div style="margin-top: 6px;">
+                    <button class="btn-info" style="width: 100%;" onclick="scanNameIssues()">
+                        Scan Names for Special Characters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Export Options -->
+            <div class="control-group">
+                <h3>Export Options</h3>
+                <div class="export-options">
+                    <button class="btn-success" onclick="downloadSVG()">Save as SVG</button>
+                    <button class="btn-success" onclick="downloadPNG()">Save as PNG</button>
+                    <button class="btn-primary" onclick="exportJSON()">Export JSON</button>
+                    <button class="btn-primary" onclick="exportCSV()">Export CSV</button>
+                    <button class="btn-primary" onclick="exportPowerBI()">Power BI Format</button>
+                </div>
             </div>
 
             <div class="control-group">
                 <h3>Information</h3>
                 <div class="info-panel" id="infoPanel">
-                    Points: 0<br>
-                    Status: Ready<br>
+                    Mode: Manual<br>
+                    Total Areas: 0<br>
                     Zoom: 100%
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Name dialog (hidden by default) -->
+    <div id="nameDialogOverlay" class="overlay hidden" onclick="cancelNaming()"></div>
+    <div id="nameDialog" class="name-dialog hidden">
+        <h3>Name this area</h3>
+        <input type="text" id="areaNameInput" placeholder="Enter area name (e.g., Room 101, Office A)">
+        <div class="buttons">
+            <button class="btn-secondary" onclick="cancelNaming()">Cancel</button>
+            <button class="btn-success" onclick="saveArea()">Save Area</button>
         </div>
     </div>
 
@@ -315,16 +529,18 @@
         const ctx = canvas.getContext('2d');
         const statusEl = document.getElementById('statusMessage');
         const infoEl = document.getElementById('infoPanel');
-        const outputEl = document.getElementById('outputCoords');
         const imageInput = document.getElementById('imageInput');
-        const coordTextarea = document.getElementById('coordinateTextarea');
+        const areaListEl = document.getElementById('areaList');
+        const areaCountEl = document.getElementById('areaCount');
 
         // Application state
-        let currentPoints = [];
-        let existingAreas = [];
-        let isPolygonFinished = false;
+        let detectedAreas = []; // Array of {name, points, color}
+        let currentPoints = []; // Manual drawing points (same semantics as polybi.html)
+        let tempDetectedPoints = null; // Temporary storage for detected points before naming
         let backgroundImg = null;
         let showGrid = true;
+        // No detection mode active until user chooses one after upload
+        let currentMode = null; // 'manual' | 'magic' | 'edge' | null
 
         // View state
         let viewScale = 1;
@@ -333,11 +549,61 @@
         let isDragging = false;
         let lastMouseX = 0;
         let lastMouseY = 0;
+        let panMode = false; // when true, left-drag pans (hand tool)
+        let lastImageFileName = 'synoptic-map.svg'; // used for export naming
+
+        // Magic wand settings
+        let magicWandTolerance = 30;
+        let simplifyEpsilon = 2;
+
+        // Color palette for areas
+        const colorPalette = [
+            '#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6',
+            '#1abc9c', '#e67e22', '#34495e', '#16a085', '#c0392b',
+            '#27ae60', '#2980b9', '#8e44ad', '#d35400', '#2c3e50',
+            '#f1c40f', '#95a5a6', '#7f8c8d', '#bdc3c7', '#ecf0f1'
+        ];
+
+        // Helper functions for manual drawing (ported from polybi.html)
+        function getDistance(p1, p2) {
+            return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+        }
+
+        // Check if a click (in canvas coordinates) is near the first point of the current manual polygon
+        function isNearFirstPoint(canvasX, canvasY) {
+            if (currentPoints.length < 3) return false;
+
+            const firstPoint = currentPoints[0];
+            const firstPointCanvas = {
+                x: firstPoint.x * viewScale + viewOffsetX,
+                y: firstPoint.y * viewScale + viewOffsetY
+            };
+
+            const clickDistance = getDistance(
+                { x: canvasX, y: canvasY },
+                firstPointCanvas
+            );
+
+            // Same close radius as polybi.html (25px in screen space)
+            return clickDistance <= 25;
+        }
 
         // Initialize application
         function initApp() {
             setupCanvas();
             setupEventListeners();
+
+            // Start with no detection mode selected and pan hand enabled.
+            currentMode = null;
+            panMode = true;
+
+            const panBtn = document.getElementById('panToggleBtn');
+            const selectBtn = document.getElementById('selectToolBtn');
+            if (panBtn) panBtn.classList.add('active');
+            if (selectBtn) selectBtn.classList.remove('active');
+
+            canvas.style.cursor = 'grab';
+
             draw();
             updateInfo();
         }
@@ -355,64 +621,122 @@
         }
 
         function setupEventListeners() {
-            // Canvas click for adding points
             canvas.addEventListener('click', handleCanvasClick);
-            
-            // Zoom with mouse wheel
             canvas.addEventListener('wheel', handleWheelZoom);
-            
-            // Pan with mouse drag
             canvas.addEventListener('mousedown', handleMouseDown);
             canvas.addEventListener('mousemove', handleMouseMove);
             canvas.addEventListener('mouseup', handleMouseUp);
             canvas.addEventListener('mouseleave', handleMouseUp);
-            
-            // Image upload
             imageInput.addEventListener('change', handleImageUpload);
-            
-            // Prevent context menu
             canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+            // Enter key in name input
+            document.getElementById('areaNameInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    saveArea();
+                }
+            });
         }
 
-        // Helper function to calculate distance between two points
-        function getDistance(p1, p2) {
-            return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+        // Mode management
+        function setMode(mode) {
+            currentMode = mode;
+
+            // Highlight the selected mode button
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                if (btn.dataset.mode === mode) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            document.getElementById('magicWandControls').classList.toggle('hidden', mode !== 'magic');
+
+            // When user explicitly chooses a mode, turn off pan hand
+            // and use the standard arrow cursor for easy pointing.
+            panMode = false;
+            const panBtn = document.getElementById('panToggleBtn');
+            const selectBtn = document.getElementById('selectToolBtn');
+            if (panBtn) panBtn.classList.remove('active');
+            if (selectBtn) selectBtn.classList.add('active');
+
+            canvas.style.cursor = 'default';
+
+            if (mode === 'magic') {
+                updateStatus('Magic Wand: Click regions to auto-detect. Keep clicking to add 200+ areas!');
+            } else {
+                updateStatus('Manual mode: Click to draw polygon points');
+            }
+
+            updateInfo();
         }
 
-        // Helper function to check if click is near first point (for closing polygon)
-        function isNearFirstPoint(canvasX, canvasY) {
-            if (currentPoints.length < 3) return false;
-            
-            const firstPoint = currentPoints[0];
-            const firstPointCanvas = {
-                x: firstPoint.x * viewScale + viewOffsetX,
-                y: firstPoint.y * viewScale + viewOffsetY
-            };
-            
-            const clickDistance = getDistance(
-                { x: canvasX, y: canvasY },
-                firstPointCanvas
-            );
-            
-            // Close zone radius - larger for easier clicking
-            return clickDistance <= 25; // 25 pixels radius in screen space
+        function updateTolerance(value) {
+            magicWandTolerance = parseInt(value);
+            document.getElementById('toleranceValue').textContent = value;
         }
 
+        function updateSimplify(value) {
+            simplifyEpsilon = parseFloat(value);
+            document.getElementById('simplifyValue').textContent = value;
+        }
+
+        // Canvas click handler
         function handleCanvasClick(e) {
-            if (isDragging || isPolygonFinished) return;
+            if (isDragging) return;
+            if (!currentMode) {
+                // No detection mode selected yet
+                updateStatus('Choose Manual, Magic Wand, or Edge mode first.');
+                return;
+            }
 
             const rect = canvas.getBoundingClientRect();
             const canvasX = e.clientX - rect.left;
             const canvasY = e.clientY - rect.top;
 
+            if (currentMode === 'magic') {
+                handleMagicWandClick(canvasX, canvasY);
+            } else if (currentMode === 'manual') {
+                handleManualClick(canvasX, canvasY);
+            }
+        }
+
+        function handleMagicWandClick(canvasX, canvasY) {
+            if (!backgroundImg) {
+                updateStatus('Please upload an image first!');
+                return;
+            }
+
+            const worldX = Math.round((canvasX - viewOffsetX) / viewScale);
+            const worldY = Math.round((canvasY - viewOffsetY) / viewScale);
+
+            if (worldX < 0 || worldX >= backgroundImg.width || worldY < 0 || worldY >= backgroundImg.height) {
+                updateStatus('Click inside the image area');
+                return;
+            }
+
+            updateStatus('Detecting region... please wait');
+
+            setTimeout(() => {
+                const points = magicWandDetect(worldX, worldY);
+                if (points && points.length >= 3) {
+                    tempDetectedPoints = points;
+                    showNameDialog();
+                } else {
+                    updateStatus('Could not detect a valid region. Try adjusting tolerance.');
+                }
+            }, 50);
+        }
+
+        function handleManualClick(canvasX, canvasY) {
             // Check if clicking near first point to close polygon
             if (isNearFirstPoint(canvasX, canvasY)) {
                 if (currentPoints.length >= 3) {
-                    isPolygonFinished = true;
-                    updateCoordinateOutput();
-                    draw();
-                    updateInfo();
-                    updateStatus('Polygon closed! Coordinates ready for export.');
+                    // Close the polygon and show naming dialog
+                    tempDetectedPoints = currentPoints.slice();
+                    currentPoints = [];
+                    showNameDialog();
                     return;
                 }
             }
@@ -422,10 +746,9 @@
             const worldY = Math.round((canvasY - viewOffsetY) / viewScale);
 
             currentPoints.push({ x: worldX, y: worldY });
-            updateCoordinateOutput();
             draw();
             updateInfo();
-            
+
             if (currentPoints.length >= 3) {
                 updateStatus(`Added point ${currentPoints.length}. Click near the first point to close polygon or continue adding points.`);
             } else {
@@ -433,9 +756,805 @@
             }
         }
 
+        // Manual drawing controls (multi-click polygon builder behaviour)
+        function finishManualPolygon() {
+            if (currentPoints.length < 3) {
+                updateStatus('Need at least 3 points to finish polygon');
+                return;
+            }
+
+            tempDetectedPoints = currentPoints.slice();
+            currentPoints = [];
+            showNameDialog();
+            draw();
+            updateInfo();
+            updateStatus('Polygon finished. Name and save the area.');
+        }
+
+        function undoLastPoint() {
+            if (currentPoints.length === 0) return;
+
+            currentPoints.pop();
+            draw();
+            updateInfo();
+
+            if (currentPoints.length === 0) {
+                updateStatus('All points removed');
+            } else {
+                updateStatus(`Point removed. ${currentPoints.length} points remaining.`);
+            }
+        }
+
+        function clearCurrentPolygon() {
+            currentPoints = [];
+            draw();
+            updateInfo();
+            updateStatus('Current manual drawing cleared');
+        }
+
+        // Name dialog functions
+        function showNameDialog() {
+            const suggestedName = `Area ${detectedAreas.length + 1}`;
+            document.getElementById('areaNameInput').value = suggestedName;
+            document.getElementById('nameDialog').classList.remove('hidden');
+            document.getElementById('nameDialogOverlay').classList.remove('hidden');
+            document.getElementById('areaNameInput').focus();
+            document.getElementById('areaNameInput').select();
+        }
+
+        function cancelNaming() {
+            document.getElementById('nameDialog').classList.add('hidden');
+            document.getElementById('nameDialogOverlay').classList.add('hidden');
+            tempDetectedPoints = null;
+            updateStatus('Detection cancelled. Click another region.');
+        }
+
+        function saveArea() {
+            const name = document.getElementById('areaNameInput').value.trim();
+
+            if (!name) {
+                alert('Please enter a name for this area');
+                return;
+            }
+
+            if (!tempDetectedPoints) {
+                cancelNaming();
+                return;
+            }
+
+            // Add to detected areas
+            const color = colorPalette[detectedAreas.length % colorPalette.length];
+            detectedAreas.push({
+                name: name,
+                points: tempDetectedPoints,
+                color: color
+            });
+
+            // Update UI
+            updateAreaList();
+            draw();
+            updateInfo();
+
+            // Close dialog
+            document.getElementById('nameDialog').classList.add('hidden');
+            document.getElementById('nameDialogOverlay').classList.add('hidden');
+            tempDetectedPoints = null;
+
+            updateStatus(`Area "${name}" added! Total: ${detectedAreas.length}. Click more regions to continue.`);
+        }
+
+        // Area management
+        function updateAreaList() {
+            areaCountEl.textContent = detectedAreas.length;
+
+            if (detectedAreas.length === 0) {
+                areaListEl.innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: #7f8c8d; font-size: 13px;">
+                        No areas detected yet
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            detectedAreas.forEach((area, index) => {
+                html += `
+                    <div class="area-item">
+                        <div class="area-color" style="background: ${area.color};"></div>
+                        <div class="area-info">
+                            <div class="area-name">${area.name}</div>
+                            <div class="area-points">${area.points.length} points</div>
+                        </div>
+                        <div class="area-actions">
+                            <button class="btn-secondary" onclick="renameArea(${index})">✎</button>
+                            <button class="btn-danger" onclick="deleteArea(${index})">×</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+              areaListEl.innerHTML = html;
+
+              // Update name diagnostics whenever the list changes
+              scanNameIssues();
+          }
+
+        function renameArea(index) {
+            const newName = prompt('Enter new name:', detectedAreas[index].name);
+            if (newName && newName.trim()) {
+                detectedAreas[index].name = newName.trim();
+                updateAreaList();
+                draw();
+                updateStatus(`Area renamed to "${newName}"`);
+            }
+        }
+
+        function deleteArea(index) {
+            const areaName = detectedAreas[index].name;
+            if (confirm(`Delete area "${areaName}"?`)) {
+                detectedAreas.splice(index, 1);
+                updateAreaList();
+                draw();
+                updateInfo();
+                updateStatus(`Area "${areaName}" deleted. ${detectedAreas.length} remaining.`);
+            }
+        }
+
+        function clearAllAreas() {
+            if (detectedAreas.length === 0) return;
+
+            if (confirm(`Delete all ${detectedAreas.length} areas?`)) {
+                detectedAreas = [];
+                updateAreaList();
+                draw();
+                updateInfo();
+                  updateStatus('All areas cleared');
+              }
+          }
+
+          // Area name diagnostics and batch replace (inspired by svg-area-editor.html)
+          function scanNameIssues() {
+              const summaryEl = document.getElementById('nameIssuesSummary');
+              if (!summaryEl) return;
+
+              if (!detectedAreas.length) {
+                  summaryEl.textContent = 'No areas loaded yet.';
+                  return;
+              }
+
+              const specialRegex = /[^A-Za-z0-9 _-]/;
+              const namesWithSpecial = [];
+
+              detectedAreas.forEach(area => {
+                  if (area.name && specialRegex.test(area.name)) {
+                      namesWithSpecial.push(area.name);
+                  }
+              });
+
+              if (!namesWithSpecial.length) {
+                  summaryEl.textContent = 'All area names are clean (letters, numbers, space, _ , -).';
+                  return;
+              }
+
+              const unique = Array.from(new Set(namesWithSpecial));
+              const sample = unique.slice(0, 5).join(', ');
+              const more = unique.length > 5 ? '…' : '';
+
+              summaryEl.textContent =
+                  `${unique.length} area name(s) contain special characters. For example: ${sample}${more}`;
+          }
+
+          function replaceInAreaNames() {
+              const findInput = document.getElementById('nameFindInput');
+              const replaceInput = document.getElementById('nameReplaceInput');
+              if (!findInput || !replaceInput) return;
+
+              const find = findInput.value;
+              const replace = replaceInput.value;
+
+              if (!find) {
+                  alert('Please enter a character or text to find.');
+                  return;
+              }
+
+              const regex = new RegExp(escapeRegex(find), 'g');
+              let changedCount = 0;
+
+              detectedAreas.forEach(area => {
+                  if (area.name && regex.test(area.name)) {
+                      area.name = area.name.replace(regex, replace);
+                      changedCount++;
+                  }
+              });
+
+              if (changedCount === 0) {
+                  updateStatus('No area names contained the specified text.');
+              } else {
+                  updateAreaList();
+                  draw();
+                  updateStatus(`Updated ${changedCount} area name(s).`);
+              }
+          }
+
+          function escapeRegex(str) {
+              return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          }
+
+        // Draw the in-progress manual polygon (mirrors polybi.html behaviour)
+        function drawCurrentManualPolygon() {
+            if (currentMode !== 'manual' || currentPoints.length === 0) return;
+
+            // Draw connecting lines between points
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 3 / viewScale;
+
+            if (currentPoints.length > 1) {
+                ctx.beginPath();
+                ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
+                for (let i = 1; i < currentPoints.length; i++) {
+                    ctx.lineTo(currentPoints[i].x, currentPoints[i].y);
+                }
+                ctx.stroke();
+            }
+
+            // Dashed line from last point to first when 3+ points (close hint)
+            if (currentPoints.length >= 3) {
+                ctx.setLineDash([5 / viewScale, 5 / viewScale]);
+                ctx.strokeStyle = '#27ae60';
+                ctx.lineWidth = 2 / viewScale;
+                ctx.beginPath();
+                ctx.moveTo(
+                    currentPoints[currentPoints.length - 1].x,
+                    currentPoints[currentPoints.length - 1].y
+                );
+                ctx.lineTo(currentPoints[0].x, currentPoints[0].y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Draw numbered points
+            currentPoints.forEach((point, index) => {
+                const radius = 8 / viewScale;
+
+                // White outer circle
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, radius + 2 / viewScale, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Colored inner circle
+                ctx.fillStyle = index === 0 ? '#e74c3c' : '#27ae60';
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Point index label
+                ctx.fillStyle = 'white';
+                ctx.font = `bold ${10 / viewScale}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText((index + 1).toString(), point.x, point.y + 3 / viewScale);
+            });
+
+            // Highlight first point as "close zone" if we have 3+ points
+            if (currentPoints.length >= 3) {
+                const firstPoint = currentPoints[0];
+                const closeRadius = 25 / viewScale;
+
+                // Green translucent circle
+                ctx.fillStyle = 'rgba(46, 204, 113, 0.2)';
+                ctx.beginPath();
+                ctx.arc(firstPoint.x, firstPoint.y, closeRadius, 0, 2 * Math.PI);
+                ctx.fill();
+
+                ctx.strokeStyle = '#2ecc71';
+                ctx.lineWidth = 2 / viewScale;
+                ctx.setLineDash([6 / viewScale, 3 / viewScale]);
+                ctx.beginPath();
+                ctx.arc(firstPoint.x, firstPoint.y, closeRadius, 0, 2 * Math.PI);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Instruction text
+                ctx.fillStyle = '#2ecc71';
+                ctx.font = `bold ${11 / viewScale}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText(
+                    'CLICK TO CLOSE',
+                    firstPoint.x,
+                    firstPoint.y - closeRadius - 8 / viewScale
+                );
+            }
+        }
+
+        // MAGIC WAND ALGORITHM
+        function magicWandDetect(startX, startY) {
+            // Create an offscreen canvas; may be downscaled for large images
+            const tempCanvas = document.createElement('canvas');
+            const originalWidth = backgroundImg.width;
+            const originalHeight = backgroundImg.height;
+
+            let width = originalWidth;
+            let height = originalHeight;
+            let scaleFactor = 1;
+
+            // If the image is very large, downscale it for the flood-fill to
+            // keep things responsive, then scale coordinates back up.
+            const MAX_PIXELS = 2000000; // ~2MP
+            const totalPixels = originalWidth * originalHeight;
+            if (totalPixels > MAX_PIXELS) {
+                scaleFactor = Math.sqrt(MAX_PIXELS / totalPixels);
+                width = Math.max(1, Math.floor(originalWidth * scaleFactor));
+                height = Math.max(1, Math.floor(originalHeight * scaleFactor));
+            }
+
+            tempCanvas.width = width;
+            tempCanvas.height = height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(backgroundImg, 0, 0, width, height);
+
+            const imageData = tempCtx.getImageData(0, 0, width, height);
+            const data = imageData.data;
+
+            // Scale starting point into the downscaled space if needed
+            const sx = Math.max(0, Math.min(width - 1, Math.round(startX * scaleFactor)));
+            const sy = Math.max(0, Math.min(height - 1, Math.round(startY * scaleFactor)));
+
+            const startIdx = (sy * width + sx) * 4;
+            const startColor = {
+                r: data[startIdx],
+                g: data[startIdx + 1],
+                b: data[startIdx + 2],
+                a: data[startIdx + 3]
+            };
+
+            const visited = new Uint8Array(width * height);
+            const queue = [[sx, sy]];
+            visited[sy * width + sx] = 1;
+            const filledPixels = [];
+
+            let processed = 0;
+            const MAX_REGION_PIXELS = 500000; // limit flood size for stability
+
+            while (queue.length > 0) {
+                const [x, y] = queue.shift();
+                filledPixels.push([x, y]);
+                processed++;
+
+                if (processed > MAX_REGION_PIXELS) {
+                    updateStatus('Detected region is very large. Try reducing tolerance or use Manual mode.');
+                    break;
+                }
+
+                const neighbors = [
+                    [x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]
+                ];
+
+                for (const [nx, ny] of neighbors) {
+                    if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
+
+                    const nIdx = ny * width + nx;
+                    if (visited[nIdx]) continue;
+
+                    const pIdx = (ny * width + nx) * 4;
+                    const pixelColor = {
+                        r: data[pIdx],
+                        g: data[pIdx + 1],
+                        b: data[pIdx + 2],
+                        a: data[pIdx + 3]
+                    };
+
+                    if (colorDistance(startColor, pixelColor) <= magicWandTolerance) {
+                        visited[nIdx] = 1;
+                        queue.push([nx, ny]);
+                    }
+                }
+            }
+
+            if (filledPixels.length < 10) {
+                return null;
+            }
+
+            const boundaryPixels = findBoundary(filledPixels, width, height, visited);
+            if (boundaryPixels.length < 3) {
+                return null;
+            }
+
+              const orderedBoundary = traceBoundary(boundaryPixels);
+              const simplified = simplifyPolygon(orderedBoundary, simplifyEpsilon);
+  
+              // Scale back up to original image coordinates
+              return simplified.map(p => ({
+                  x: p[0] / scaleFactor,
+                  y: p[1] / scaleFactor
+              }));
+          }
+
+        function colorDistance(c1, c2) {
+            return Math.sqrt(
+                Math.pow(c1.r - c2.r, 2) +
+                Math.pow(c1.g - c2.g, 2) +
+                Math.pow(c1.b - c2.b, 2)
+            );
+        }
+
+        function findBoundary(pixels, width, height, visited) {
+            const boundary = new Set();
+
+            for (const [x, y] of pixels) {
+                const neighbors = [
+                    [x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]
+                ];
+
+                for (const [nx, ny] of neighbors) {
+                    if (nx < 0 || nx >= width || ny < 0 || ny >= height) {
+                        boundary.add(`${x},${y}`);
+                        break;
+                    }
+
+                    const nIdx = ny * width + nx;
+                    if (!visited[nIdx]) {
+                        boundary.add(`${x},${y}`);
+                        break;
+                    }
+                }
+            }
+
+            return Array.from(boundary).map(coord => {
+                const [x, y] = coord.split(',').map(Number);
+                return [x, y];
+            });
+        }
+
+        function traceBoundary(boundaryPixels) {
+            if (boundaryPixels.length === 0) return [];
+
+            const ordered = [boundaryPixels[0]];
+            const remaining = new Set(boundaryPixels.slice(1).map(p => `${p[0]},${p[1]}`));
+
+            while (remaining.size > 0) {
+                const current = ordered[ordered.length - 1];
+                let nearestDist = Infinity;
+                let nearest = null;
+
+                for (const coordStr of remaining) {
+                    const [x, y] = coordStr.split(',').map(Number);
+                    const dist = Math.pow(current[0] - x, 2) + Math.pow(current[1] - y, 2);
+
+                    if (dist < nearestDist) {
+                        nearestDist = dist;
+                        nearest = [x, y, coordStr];
+                    }
+                }
+
+                if (nearest && nearestDist < 100) {
+                    ordered.push([nearest[0], nearest[1]]);
+                    remaining.delete(nearest[2]);
+                } else {
+                    break;
+                }
+            }
+
+            return ordered;
+        }
+
+        function simplifyPolygon(points, epsilon) {
+            if (points.length <= 2) return points;
+
+            let maxDist = 0;
+            let maxIndex = 0;
+            const first = points[0];
+            const last = points[points.length - 1];
+
+            for (let i = 1; i < points.length - 1; i++) {
+                const dist = perpendicularDistance(points[i], first, last);
+                if (dist > maxDist) {
+                    maxDist = dist;
+                    maxIndex = i;
+                }
+            }
+
+            if (maxDist > epsilon) {
+                const left = simplifyPolygon(points.slice(0, maxIndex + 1), epsilon);
+                const right = simplifyPolygon(points.slice(maxIndex), epsilon);
+                return left.slice(0, -1).concat(right);
+            } else {
+                return [first, last];
+            }
+        }
+
+        function perpendicularDistance(point, lineStart, lineEnd) {
+            const [x, y] = point;
+            const [x1, y1] = lineStart;
+            const [x2, y2] = lineEnd;
+
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+
+            if (dx === 0 && dy === 0) {
+                return Math.sqrt(Math.pow(x - x1, 2) + Math.pow(y - y1, 2));
+            }
+
+            const t = ((x - x1) * dx + (y - y1) * dy) / (dx * dx + dy * dy);
+            const clampedT = Math.max(0, Math.min(1, t));
+            const projX = x1 + clampedT * dx;
+            const projY = y1 + clampedT * dy;
+
+            return Math.sqrt(Math.pow(x - projX, 2) + Math.pow(y - projY, 2));
+        }
+
+        // Load polygon areas from an SVG file (e.g., previously exported Synoptic map)
+        function loadAreasFromSVG(svgText) {
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(svgText, 'image/svg+xml');
+
+                // If the SVG has an embedded raster <image>, use that as the
+                // layout picture so existing coloured areas are not baked into
+                // the background. This keeps the layout clean and lets our own
+                // polygons control colours.
+                const imgNode = doc.querySelector('image');
+                if (imgNode) {
+                    const href =
+                        imgNode.getAttribute('xlink:href') ||
+                        imgNode.getAttribute('href');
+
+                    if (href) {
+                        const img = new Image();
+                        img.onload = function() {
+                            backgroundImg = img;
+
+                            // Use scale 1 and center the layout; zoom/pan will
+                            // move both layout and polygons together.
+                            viewScale = 1;
+                            viewOffsetX = (canvas.width - img.width) / 2;
+                            viewOffsetY = (canvas.height - img.height) / 2;
+
+                            draw();
+                            updateInfo();
+                        };
+                        img.src = href;
+                    }
+                }
+
+                const polygons = doc.querySelectorAll('polygon');
+
+                if (!polygons.length) {
+                    updateStatus('No polygon areas found in SVG');
+                    return;
+                }
+
+                detectedAreas = [];
+
+                polygons.forEach(poly => {
+                    const rawPoints = poly.getAttribute('points') || '';
+                    const trimmed = rawPoints.trim();
+                    if (!trimmed) return;
+
+                    // Support "x,y x,y ..." or "x,y,x,y,..." or "x y x y ..."
+                    const nums = trimmed
+                        .split(/[\s,]+/)
+                        .map(v => parseFloat(v))
+                        .filter(v => !isNaN(v));
+
+                    if (nums.length < 6) return; // need at least 3 points
+
+                    const points = [];
+                    for (let i = 0; i + 1 < nums.length; i += 2) {
+                        points.push({ x: nums[i], y: nums[i + 1] });
+                    }
+                    if (points.length < 3) return;
+
+                    const name =
+                        poly.getAttribute('id') ||
+                        poly.getAttribute('data-name') ||
+                        `Area ${detectedAreas.length + 1}`;
+
+                  // Always use our palette colors so SVG areas look
+                  // the same as areas drawn in this tool
+                  const color = colorPalette[detectedAreas.length % colorPalette.length];
+
+                  detectedAreas.push({ name, points, color });
+              });
+
+                updateAreaList();
+                draw();
+                updateInfo();
+                updateStatus(`Loaded ${detectedAreas.length} areas from SVG`);
+            } catch (err) {
+                updateStatus('Failed to load areas from SVG');
+            }
+        }
+
+        // Export functions
+        function downloadSVG() {
+            if (detectedAreas.length === 0) {
+                alert('No areas to export!');
+                return;
+            }
+
+            const width = backgroundImg ? backgroundImg.width : 1000;
+            const height = backgroundImg ? backgroundImg.height : 1000;
+
+            let svg = `<svg version="1.1" id="Map" class="gen-by-synoptic-designer" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${width} ${height}" xml:space="preserve">`;
+
+            // Add background image if exists
+            if (backgroundImg) {
+                const imgCanvas = document.createElement('canvas');
+                imgCanvas.width = backgroundImg.width;
+                imgCanvas.height = backgroundImg.height;
+                const imgCtx = imgCanvas.getContext('2d');
+                imgCtx.drawImage(backgroundImg, 0, 0);
+                const dataURL = imgCanvas.toDataURL('image/jpeg', 0.9);
+                svg += `<image width="${width}" height="${height}" xlink:href="${dataURL}" />`;
+            }
+
+            // Add areas - Power BI Synoptic Designer format
+            detectedAreas.forEach((area, index) => {
+                // Points format: comma-separated x1,y1,x2,y2,... (NOT space-separated pairs)
+                const points = area.points.map(p => `${Math.round(p.x)},${Math.round(p.y)}`).join(',');
+                // Use palette-based colour for consistency
+                const color = colorPalette[index % colorPalette.length];
+                svg += `<polygon id="${area.name}" title="" points="${points}" fill="${color}" stroke="${color}" fill-opacity="0.3" />`;
+            });
+
+            svg += `</svg>`;
+
+            // Preserve original filename when possible
+            let outName = lastImageFileName || 'synoptic-map.svg';
+            // Ensure it has .svg extension
+            if (!/\.svg$/i.test(outName)) {
+                outName += '.svg';
+            }
+
+            downloadFile(svg, outName, 'image/svg+xml');
+            updateStatus(`Power BI SVG exported with ${detectedAreas.length} areas as ${outName}!`);
+        }
+
+        function downloadPNG() {
+            if (detectedAreas.length === 0) {
+                alert('No areas to export!');
+                return;
+            }
+
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = backgroundImg ? backgroundImg.width : 1000;
+            exportCanvas.height = backgroundImg ? backgroundImg.height : 1000;
+            const exportCtx = exportCanvas.getContext('2d');
+
+            // Draw background
+            if (backgroundImg) {
+                exportCtx.drawImage(backgroundImg, 0, 0);
+            } else {
+                exportCtx.fillStyle = 'white';
+                exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+            }
+
+              // Draw areas (same style as on canvas)
+              detectedAreas.forEach((area, index) => {
+                  const baseColor = colorPalette[index % colorPalette.length];
+
+                  // Semi-transparent fill
+                  exportCtx.save();
+                  exportCtx.fillStyle = baseColor;
+                  exportCtx.globalAlpha = 0.3;
+                  exportCtx.beginPath();
+                  exportCtx.moveTo(area.points[0].x, area.points[0].y);
+                  for (let i = 1; i < area.points.length; i++) {
+                      exportCtx.lineTo(area.points[i].x, area.points[i].y);
+                  }
+                  exportCtx.closePath();
+                  exportCtx.fill();
+                  exportCtx.restore();
+
+                  exportCtx.strokeStyle = baseColor;
+                  exportCtx.lineWidth = 2;
+                  exportCtx.beginPath();
+                  exportCtx.moveTo(area.points[0].x, area.points[0].y);
+                  for (let i = 1; i < area.points.length; i++) {
+                      exportCtx.lineTo(area.points[i].x, area.points[i].y);
+                  }
+                  exportCtx.closePath();
+                  exportCtx.stroke();
+
+                // Add label
+                const centerX = area.points.reduce((sum, p) => sum + p.x, 0) / area.points.length;
+                const centerY = area.points.reduce((sum, p) => sum + p.y, 0) / area.points.length;
+                exportCtx.fillStyle = area.color;
+                exportCtx.font = 'bold 14px Arial';
+                exportCtx.textAlign = 'center';
+
+                let label = area.name || '';
+                const maxLen = 18;
+                if (label.length > maxLen) {
+                    label = label.slice(0, maxLen - 1) + '…';
+                }
+
+                exportCtx.fillText(label, centerX, centerY);
+            });
+
+            exportCanvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'areas.png';
+                a.click();
+                URL.revokeObjectURL(url);
+                updateStatus(`PNG exported with ${detectedAreas.length} areas!`);
+            });
+        }
+
+        function exportJSON() {
+            if (detectedAreas.length === 0) {
+                alert('No areas to export!');
+                return;
+            }
+
+            const data = {
+                version: '1.0',
+                imageWidth: backgroundImg ? backgroundImg.width : 0,
+                imageHeight: backgroundImg ? backgroundImg.height : 0,
+                areas: detectedAreas.map(area => ({
+                    name: area.name,
+                    color: area.color,
+                    points: area.points
+                }))
+            };
+
+            const json = JSON.stringify(data, null, 2);
+            downloadFile(json, 'areas.json', 'application/json');
+            updateStatus(`JSON exported with ${detectedAreas.length} areas!`);
+        }
+
+        function exportCSV() {
+            if (detectedAreas.length === 0) {
+                alert('No areas to export!');
+                return;
+            }
+
+            let csv = 'Area Name,Points,Coordinates\n';
+            detectedAreas.forEach(area => {
+                const coords = area.points.map(p => `${p.x} ${p.y}`).join(';');
+                csv += `"${area.name}",${area.points.length},"${coords}"\n`;
+            });
+
+            downloadFile(csv, 'areas.csv', 'text/csv');
+            updateStatus(`CSV exported with ${detectedAreas.length} areas!`);
+        }
+
+        function exportPowerBI() {
+            if (detectedAreas.length === 0) {
+                alert('No areas to export!');
+                return;
+            }
+
+            let output = '';
+            detectedAreas.forEach(area => {
+                const coords = area.points.map(p => `${p.x}, ${p.y}`).join(', ');
+                // Close the polygon
+                const firstPoint = area.points[0];
+                output += `${area.name}\t${coords}, ${firstPoint.x}, ${firstPoint.y}\n`;
+            });
+
+            downloadFile(output, 'powerbi-areas.txt', 'text/plain');
+            updateStatus(`Power BI format exported with ${detectedAreas.length} areas!`);
+        }
+
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // View controls
         function handleWheelZoom(e) {
             e.preventDefault();
-            
+
             const rect = canvas.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
@@ -454,7 +1573,8 @@
         }
 
         function handleMouseDown(e) {
-            if (e.button === 2 || e.ctrlKey) { // Right click or Ctrl+click
+            const isPanButton = panMode && e.button === 0;
+            if (isPanButton || e.button === 2 || e.ctrlKey) {
                 isDragging = true;
                 lastMouseX = e.clientX;
                 lastMouseY = e.clientY;
@@ -467,79 +1587,265 @@
             if (isDragging) {
                 const deltaX = e.clientX - lastMouseX;
                 const deltaY = e.clientY - lastMouseY;
-                
+
                 viewOffsetX += deltaX;
                 viewOffsetY += deltaY;
-                
+
                 lastMouseX = e.clientX;
                 lastMouseY = e.clientY;
-                
+
                 draw();
             }
         }
 
         function handleMouseUp() {
             isDragging = false;
-            canvas.style.cursor = 'crosshair';
+            if (panMode) {
+                canvas.style.cursor = 'grab';
+            } else if (currentMode === 'magic') {
+                canvas.style.cursor = 'pointer';
+            } else {
+                canvas.style.cursor = 'crosshair';
+            }
         }
 
         function handleImageUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
 
+            // Remember last uploaded filename so SVG exports can reuse it
+            lastImageFileName = file.name || lastImageFileName;
+
+            const isSvg = file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg');
+
+            // If an SVG is uploaded, load polygon areas (and background image)
+            // from the SVG content itself, and skip treating the whole SVG as
+            // a raster image. This avoids baking black polygons into the layout.
+            if (isSvg) {
+                const textReader = new FileReader();
+                textReader.onload = function(event) {
+                    loadAreasFromSVG(event.target.result);
+                };
+                textReader.readAsText(file);
+
+                // After uploading SVG, default to pan hand, no detection mode
+                currentMode = null;
+                panMode = true;
+                const panBtn = document.getElementById('panToggleBtn');
+                const selectBtn = document.getElementById('selectToolBtn');
+                if (panBtn) panBtn.classList.add('active');
+                if (selectBtn) selectBtn.classList.remove('active');
+                canvas.style.cursor = 'grab';
+
+                return;
+            }
+
+            // Non-SVG: treat as raster image, auto-fit as before
             const reader = new FileReader();
             reader.onload = function(event) {
                 const img = new Image();
                 img.onload = function() {
                     backgroundImg = img;
-                    
-                    // Auto-fit image
+
                     const imgAspect = img.width / img.height;
                     const canvasAspect = canvas.width / canvas.height;
-                    
+
+                    // Auto-fit to canvas while preserving aspect ratio
                     if (imgAspect > canvasAspect) {
                         viewScale = (canvas.width * 0.8) / img.width;
                     } else {
                         viewScale = (canvas.height * 0.8) / img.height;
                     }
-                    
+
                     viewOffsetX = (canvas.width - img.width * viewScale) / 2;
                     viewOffsetY = (canvas.height - img.height * viewScale) / 2;
-                    
+
+                    edgeImageData = null;
+
                     draw();
                     updateInfo();
-                    updateStatus('Background image loaded successfully');
+
+                    // After uploading raster image, default to pan hand,
+                    // and let user choose detection mode.
+                    currentMode = null;
+                    panMode = true;
+                    const panBtn = document.getElementById('panToggleBtn');
+                    const selectBtn = document.getElementById('selectToolBtn');
+                    if (panBtn) panBtn.classList.add('active');
+                    if (selectBtn) selectBtn.classList.remove('active');
+                    canvas.style.cursor = 'grab';
+
+                    updateStatus('Image loaded. Use the hand to move, then choose Manual, Magic Wand, or Edge.');
                 };
                 img.src = event.target.result;
             };
             reader.readAsDataURL(file);
         }
 
+        function removeImage() {
+            backgroundImg = null;
+            imageInput.value = '';
+            draw();
+            updateStatus('Image removed');
+        }
+
+        function toggleGrid() {
+            showGrid = !showGrid;
+            draw();
+            updateStatus(`Grid ${showGrid ? 'enabled' : 'disabled'}`);
+        }
+
+        // Switch back to select/magic-wand cursor (turn off pan mode)
+        function activateSelectTool() {
+            panMode = false;
+            const panBtn = document.getElementById('panToggleBtn');
+            const selectBtn = document.getElementById('selectToolBtn');
+            if (panBtn) panBtn.classList.remove('active');
+            if (selectBtn) selectBtn.classList.add('active');
+
+            if (currentMode === 'magic') {
+                canvas.style.cursor = 'pointer';
+                updateStatus('Magic Wand: Click regions to auto-detect.');
+            } else if (currentMode === 'edge') {
+                canvas.style.cursor = 'crosshair';
+                updateStatus('Edge Detection mode.');
+            } else {
+                canvas.style.cursor = 'crosshair';
+                updateStatus('Manual mode: Click to draw polygon points');
+            }
+        }
+
+        // Toggle hand-pan mode (left-drag to move image)
+        function togglePanMode() {
+            panMode = !panMode;
+            const btn = document.getElementById('panToggleBtn');
+            const selectBtn = document.getElementById('selectToolBtn');
+            if (btn) btn.classList.toggle('active', panMode);
+            if (selectBtn) selectBtn.classList.toggle('active', !panMode);
+
+                if (panMode) {
+                    canvas.style.cursor = 'grab';
+                    updateStatus('Pan mode: drag with left mouse to move image');
+                } else {
+                    canvas.style.cursor = 'default';
+                    if (currentMode === 'magic') {
+                        updateStatus('Pan mode off. Magic Wand: click to detect regions.');
+                    } else if (currentMode === 'manual') {
+                        updateStatus('Pan mode off. Manual draw mode.');
+                    } else {
+                        updateStatus('Pan mode off. Choose a detection mode.');
+                    }
+                }
+        }
+
+        function zoomIn() {
+            viewScale = Math.min(viewScale * 1.2, 5);
+            draw();
+            updateInfo();
+        }
+
+        function zoomOut() {
+            viewScale = Math.max(viewScale / 1.2, 0.1);
+            draw();
+            updateInfo();
+        }
+
+        function resetView() {
+            if (backgroundImg) {
+                const imgAspect = backgroundImg.width / backgroundImg.height;
+                const canvasAspect = canvas.width / canvas.height;
+
+                if (imgAspect > canvasAspect) {
+                    viewScale = (canvas.width * 0.8) / backgroundImg.width;
+                } else {
+                    viewScale = (canvas.height * 0.8) / backgroundImg.height;
+                }
+
+                viewOffsetX = (canvas.width - backgroundImg.width * viewScale) / 2;
+                viewOffsetY = (canvas.height - backgroundImg.height * viewScale) / 2;
+            } else {
+                viewScale = 1;
+                viewOffsetX = 0;
+                viewOffsetY = 0;
+            }
+
+            draw();
+            updateInfo();
+            updateStatus('View reset');
+        }
+
         // Drawing functions
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+
             ctx.save();
             ctx.translate(viewOffsetX, viewOffsetY);
             ctx.scale(viewScale, viewScale);
 
             // Draw background image
             if (backgroundImg) {
-                ctx.globalAlpha = 0.7;
+                ctx.globalAlpha = 0.8;
                 ctx.drawImage(backgroundImg, 0, 0);
                 ctx.globalAlpha = 1.0;
             }
 
-            // Draw grid
+            // Draw grid (overlay, even when image is present)
             if (showGrid) {
                 drawGrid();
             }
 
-            // Draw existing areas
-            drawExistingAreas();
+            // Draw all detected areas
+            detectedAreas.forEach((area, index) => {
+                if (area.points.length < 3) return;
 
-            // Draw current polygon
-            drawCurrentPolygon();
+                // Always use palette colours by index so imported
+                // SVG areas look the same as manually drawn ones.
+                const baseColor = colorPalette[index % colorPalette.length];
+
+                // Semi-transparent fill in the area color
+                ctx.save();
+                ctx.fillStyle = baseColor;
+                ctx.globalAlpha = 0.3;
+                ctx.beginPath();
+                ctx.moveTo(area.points[0].x, area.points[0].y);
+                for (let i = 1; i < area.points.length; i++) {
+                    ctx.lineTo(area.points[i].x, area.points[i].y);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+
+                // Solid stroke in the same color
+                ctx.strokeStyle = baseColor;
+                ctx.lineWidth = 2 / viewScale;
+                ctx.beginPath();
+                ctx.moveTo(area.points[0].x, area.points[0].y);
+                for (let i = 1; i < area.points.length; i++) {
+                    ctx.lineTo(area.points[i].x, area.points[i].y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+
+                // Draw label
+                const centerX = area.points.reduce((sum, p) => sum + p.x, 0) / area.points.length;
+                const centerY = area.points.reduce((sum, p) => sum + p.y, 0) / area.points.length;
+
+                ctx.fillStyle = baseColor;
+                ctx.font = `bold ${14 / viewScale}px Arial`;
+                ctx.textAlign = 'center';
+
+                // Keep labels readable: truncate very long names
+                let label = area.name || '';
+                const maxLen = 18;
+                if (label.length > maxLen) {
+                    label = label.slice(0, maxLen - 1) + '…';
+                }
+
+                ctx.fillText(label, centerX, centerY);
+            });
+
+            // Draw the current manual polygon on top of detected areas
+            drawCurrentManualPolygon();
 
             ctx.restore();
         }
@@ -569,318 +1875,19 @@
             }
         }
 
-        function drawExistingAreas() {
-            const colors = ['#3498db', '#9b59b6', '#f39c12', '#1abc9c', '#34495e', '#e67e22'];
-            
-            existingAreas.forEach((area, index) => {
-                if (area.length < 3) return;
-
-                const color = colors[index % colors.length];
-                
-                ctx.fillStyle = color + '40';
-                ctx.strokeStyle = color;
-                ctx.lineWidth = 2 / viewScale;
-
-                ctx.beginPath();
-                ctx.moveTo(area[0].x, area[0].y);
-                for (let i = 1; i < area.length; i++) {
-                    ctx.lineTo(area[i].x, area[i].y);
-                }
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-
-                // Area label
-                const centerX = area.reduce((sum, p) => sum + p.x, 0) / area.length;
-                const centerY = area.reduce((sum, p) => sum + p.y, 0) / area.length;
-                
-                ctx.fillStyle = color;
-                ctx.font = `bold ${14 / viewScale}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText(`Area ${index + 1}`, centerX, centerY);
-            });
-        }
-
-        function drawCurrentPolygon() {
-            if (currentPoints.length === 0) return;
-
-            // Draw connecting lines and fill if polygon is finished
-            if (isPolygonFinished && currentPoints.length >= 3) {
-                // Draw filled polygon
-                ctx.fillStyle = 'rgba(231, 76, 60, 0.3)'; // More visible fill
-                ctx.strokeStyle = '#c0392b';
-                ctx.lineWidth = 3 / viewScale;
-                
-                ctx.beginPath();
-                ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
-                for (let i = 1; i < currentPoints.length; i++) {
-                    ctx.lineTo(currentPoints[i].x, currentPoints[i].y);
-                }
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-                
-                // Add "FINISHED" label in center
-                const centerX = currentPoints.reduce((sum, p) => sum + p.x, 0) / currentPoints.length;
-                const centerY = currentPoints.reduce((sum, p) => sum + p.y, 0) / currentPoints.length;
-                
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                ctx.fillRect(centerX - 40 / viewScale, centerY - 10 / viewScale, 80 / viewScale, 20 / viewScale);
-                
-                ctx.fillStyle = '#c0392b';
-                ctx.font = `bold ${12 / viewScale}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText('FINISHED', centerX, centerY + 4 / viewScale);
-                
-            } else {
-                // Draw lines for unfinished polygon
-                ctx.strokeStyle = '#e74c3c';
-                ctx.lineWidth = 3 / viewScale;
-                
-                if (currentPoints.length > 1) {
-                    ctx.beginPath();
-                    ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
-                    for (let i = 1; i < currentPoints.length; i++) {
-                        ctx.lineTo(currentPoints[i].x, currentPoints[i].y);
-                    }
-                    ctx.stroke();
-                }
-                
-                // Draw dashed line from last point to first point if we have 3+ points
-                if (currentPoints.length >= 3) {
-                    ctx.setLineDash([8 / viewScale, 4 / viewScale]);
-                    ctx.strokeStyle = '#95a5a6';
-                    ctx.lineWidth = 2 / viewScale;
-                    ctx.beginPath();
-                    ctx.moveTo(currentPoints[currentPoints.length - 1].x, currentPoints[currentPoints.length - 1].y);
-                    ctx.lineTo(currentPoints[0].x, currentPoints[0].y);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                }
-            }
-
-            // Draw points
-            currentPoints.forEach((point, index) => {
-                const radius = 8 / viewScale;
-                
-                // White background circle
-                ctx.fillStyle = 'white';
-                ctx.beginPath();
-                ctx.arc(point.x, point.y, radius + 2 / viewScale, 0, 2 * Math.PI);
-                ctx.fill();
-
-                // Colored center
-                if (isPolygonFinished) {
-                    ctx.fillStyle = '#c0392b';
-                } else {
-                    ctx.fillStyle = index === 0 ? '#e74c3c' : '#27ae60';
-                }
-                ctx.beginPath();
-                ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI);
-                ctx.fill();
-
-                // Point number
-                ctx.fillStyle = 'white';
-                ctx.font = `bold ${10 / viewScale}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText((index + 1).toString(), point.x, point.y + 3 / viewScale);
-            });
-
-            // Highlight first point as close zone if we have 3+ points and polygon not finished
-            if (currentPoints.length >= 3 && !isPolygonFinished) {
-                const firstPoint = currentPoints[0];
-                const closeRadius = 25 / viewScale; // Matching the click detection radius
-                
-                // Draw close zone
-                ctx.fillStyle = 'rgba(46, 204, 113, 0.2)';
-                ctx.beginPath();
-                ctx.arc(firstPoint.x, firstPoint.y, closeRadius, 0, 2 * Math.PI);
-                ctx.fill();
-                
-                ctx.strokeStyle = '#2ecc71';
-                ctx.lineWidth = 2 / viewScale;
-                ctx.setLineDash([6 / viewScale, 3 / viewScale]);
-                ctx.beginPath();
-                ctx.arc(firstPoint.x, firstPoint.y, closeRadius, 0, 2 * Math.PI);
-                ctx.stroke();
-                ctx.setLineDash([]);
-                
-                // Add instruction text
-                ctx.fillStyle = '#2ecc71';
-                ctx.font = `bold ${11 / viewScale}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText('CLICK TO CLOSE', firstPoint.x, firstPoint.y - closeRadius - 8 / viewScale);
-            }
-        }
-
-        // Control functions
-        function loadExistingAreas() {
-            const text = coordTextarea.value.trim();
-            if (!text) {
-                updateStatus('No coordinate data to load');
-                return;
-            }
-
-            existingAreas = [];
-            const lines = text.split('\n');
-            
-            lines.forEach(line => {
-                line = line.trim();
-                if (line) {
-                    const coords = line.split(',').map(c => parseFloat(c.trim())).filter(n => !isNaN(n));
-                    if (coords.length >= 6) {
-                        const points = [];
-                        for (let i = 0; i < coords.length; i += 2) {
-                            if (i + 1 < coords.length) {
-                                points.push({ x: coords[i], y: coords[i + 1] });
-                            }
-                        }
-                        existingAreas.push(points);
-                    }
-                }
-            });
-
-            draw();
-            updateStatus(`Loaded ${existingAreas.length} existing areas`);
-        }
-
-        function clearExistingAreas() {
-            existingAreas = [];
-            coordTextarea.value = '';
-            draw();
-            updateStatus('Existing areas cleared');
-        }
-
-        function finishPolygon() {
-            if (currentPoints.length < 3) {
-                updateStatus('Need at least 3 points to finish polygon');
-                return;
-            }
-
-            isPolygonFinished = true;
-            updateCoordinateOutput();
-            draw();
-            updateInfo();
-            updateStatus('Polygon finished! Coordinates ready for export.');
-        }
-
-        function undoLastPoint() {
-            if (currentPoints.length === 0) return;
-            
-            currentPoints.pop();
-            if (currentPoints.length < 3) {
-                isPolygonFinished = false;
-            }
-            updateCoordinateOutput();
-            draw();
-            updateInfo();
-            updateStatus(currentPoints.length === 0 ? 'All points removed' : `Point removed. ${currentPoints.length} points remaining.`);
-        }
-
-        function clearCurrentPolygon() {
-            currentPoints = [];
-            isPolygonFinished = false;
-            updateCoordinateOutput();
-            draw();
-            updateInfo();
-            updateStatus('Polygon cleared. Click to start drawing.');
-        }
-
-        function removeImage() {
-            backgroundImg = null;
-            imageInput.value = '';
-            draw();
-            updateStatus('Background image removed');
-        }
-
-        function toggleGrid() {
-            showGrid = !showGrid;
-            draw();
-            updateStatus(`Grid ${showGrid ? 'enabled' : 'disabled'}`);
-        }
-
-        function zoomIn() {
-            viewScale = Math.min(viewScale * 1.2, 5);
-            draw();
-            updateInfo();
-        }
-
-        function zoomOut() {
-            viewScale = Math.max(viewScale / 1.2, 0.1);
-            draw();
-            updateInfo();
-        }
-
-        function resetView() {
-            viewScale = 1;
-            viewOffsetX = 0;
-            viewOffsetY = 0;
-            draw();
-            updateInfo();
-            updateStatus('View reset to default');
-        }
-
-        function updateCoordinateOutput() {
-            if (currentPoints.length === 0) {
-                outputEl.textContent = 'Coordinates will appear here...';
-                return;
-            }
-
-            let coords = '';
-            currentPoints.forEach((point, index) => {
-                if (index > 0) coords += ', ';
-                coords += `${point.x}, ${point.y}`;
-            });
-
-            // Close polygon if finished
-            if (isPolygonFinished && currentPoints.length > 0) {
-                coords += `, ${currentPoints[0].x}, ${currentPoints[0].y}`;
-            }
-
-            outputEl.textContent = coords;
-        }
-
-        function copyToClipboard() {
-            const coords = outputEl.textContent;
-            if (coords === 'Coordinates will appear here...') {
-                updateStatus('No coordinates to copy');
-                return;
-            }
-
-            navigator.clipboard.writeText(coords).then(() => {
-                updateStatus('Coordinates copied to clipboard successfully!');
-            }).catch(() => {
-                updateStatus('Failed to copy coordinates');
-            });
-        }
-
-        function downloadFile() {
-            const coords = outputEl.textContent;
-            if (coords === 'Coordinates will appear here...') {
-                updateStatus('No coordinates to download');
-                return;
-            }
-
-            const blob = new Blob([coords], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'polygon_coordinates.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            updateStatus('Coordinates downloaded successfully!');
-        }
-
         function updateStatus(message) {
             statusEl.textContent = message;
         }
 
         function updateInfo() {
+            const modeNames = {
+                'manual': 'Manual Draw',
+                'magic': 'Magic Wand'
+            };
+
             infoEl.innerHTML = `
-                Points: ${currentPoints.length}<br>
-                Status: ${isPolygonFinished ? 'Finished' : 'Drawing'}<br>
+                Mode: ${modeNames[currentMode] || 'None'}<br>
+                Total Areas: ${detectedAreas.length}<br>
                 Zoom: ${Math.round(viewScale * 100)}%
             `;
         }
