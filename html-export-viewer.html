@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Export Viewer for Power BI &mdash; PBIwise.com</title>
+    <meta name="description" content="HTML Export Viewer is a Power BI custom visual that exports a styled HTML table to PDF, Excel, or Word &mdash; with optional live, recalculating Excel formulas.">
+
+    <!-- Favicon -->
+    <link rel="icon" href="images/favicon.png" type="image/png" sizes="any">
+    <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2c3e50;
+            line-height: 1.6;
+            background: #f8f9fa;
+        }
+
+        a { color: #2d6a4f; }
+
+        .topbar {
+            background: #2c3e50;
+            color: white;
+            padding: 14px 20px;
+        }
+        .topbar .wrap {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .topbar a.home {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .topbar a.home:hover { opacity: 0.85; }
+
+        .hero {
+            background: #2c3e50;
+            color: white;
+            padding: 60px 20px 50px;
+            text-align: center;
+        }
+        .hero .wrap { max-width: 760px; margin: 0 auto; }
+        .hero h1 { font-size: 32px; margin-bottom: 14px; }
+        .hero p.tagline { font-size: 17px; opacity: 0.9; }
+
+        .content {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 50px 20px 70px;
+        }
+
+        .content section { margin-bottom: 44px; }
+
+        .content h2 {
+            font-size: 22px;
+            color: #2c3e50;
+            margin-bottom: 14px;
+            border-left: 4px solid #2d6a4f;
+            padding-left: 12px;
+        }
+
+        .content p { margin-bottom: 14px; }
+
+        .content ul { margin: 0 0 14px 22px; }
+        .content li { margin-bottom: 8px; }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .feature-card {
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #2d6a4f;
+            padding: 16px 18px;
+        }
+        .feature-card h3 { font-size: 15px; margin-bottom: 6px; color: #2c3e50; }
+        .feature-card p { font-size: 14px; margin: 0; color: #4a5568; }
+
+        code, pre {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+        }
+        pre {
+            background: #1e2a36;
+            color: #e6edf3;
+            padding: 14px 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+        code.inline {
+            background: #eef1f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .privacy-box {
+            background: white;
+            border: 1px solid #dfe6e9;
+            border-radius: 8px;
+            padding: 20px 24px;
+        }
+        .privacy-box p:last-child { margin-bottom: 0; }
+
+        .cta-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .btn-primary { background: #2d6a4f; color: white; }
+        .btn-primary:hover { background: #24573f; }
+        .btn-secondary { background: #eef1f4; color: #2c3e50; }
+        .btn-secondary:hover { background: #dfe6e9; }
+
+        footer {
+            text-align: center;
+            padding: 30px 20px 50px;
+            color: #718096;
+            font-size: 13px;
+        }
+        footer a { color: #718096; }
+    </style>
+</head>
+<body>
+
+    <div class="topbar">
+        <div class="wrap">
+            <a href="index.html" class="home">&larr; PBIwise.com</a>
+            <a href="contact.html" class="home">Contact</a>
+        </div>
+    </div>
+
+    <div class="hero">
+        <div class="wrap">
+            <h1>HTML Export Viewer</h1>
+            <p class="tagline">A Power BI custom visual that exports a styled HTML table to PDF, Excel, or Word &mdash; with optional live, recalculating Excel formulas.</p>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <section id="overview">
+            <h2>What it does</h2>
+            <p>
+                HTML Export Viewer renders an HTML measure &mdash; typically a styled table built in DAX &mdash;
+                and gives report users one-click buttons to export it to PDF, Excel, or Word.
+            </p>
+            <p>
+                Unlike a plain "print the page" export, this visual preserves the actual on-screen formatting
+                (colors, bold text, alignment, borders) in every export format, and can optionally produce an
+                Excel workbook with live, recalculating formulas instead of static numbers &mdash; useful for
+                tables where a value is the result of a calculation (an escalation rate, a projection, a
+                multi-year total) that a user may want to adjust after export.
+            </p>
+        </section>
+
+        <section id="features">
+            <h2>Key features</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Three export formats</h3>
+                    <p>PDF, Excel (.xlsx), and Word from the same content, one click each.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Formatting-faithful</h3>
+                    <p>Matches the colors, bold text, alignment, and borders shown on screen.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Live Excel formulas</h3>
+                    <p>Mark specific cells with a formula template and a small set of named constants &mdash; the Excel export writes real, recalculating formulas.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Configurable toolbar</h3>
+                    <p>Show/hide, button position, button text, and export file name, all from the formatting pane.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>No external services</h3>
+                    <p>No network access, no telemetry, no data collection.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>DAX-driven, not locked-in</h3>
+                    <p>Every export detail &mdash; layout, formulas, styling &mdash; is controlled by your own DAX measure, not hidden inside the visual.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="setup">
+            <h2>How it's set up</h2>
+            <p>
+                Bind a single DAX measure that returns HTML content to the visual's "HTML content" field. At
+                minimum, that means a measure returning an HTML string with at least one <code class="inline">&lt;table&gt;</code>.
+                Optionally, mark specific cells with a <code class="inline">data-formula</code> attribute and
+                declare a small set of named constants to get live, recalculating formulas in the Excel export
+                instead of static values:
+            </p>
+            <pre>&lt;td data-formula="{baseRent}*(1+{years}*{rentRate})"
+    data-formula-vars="years:3"&gt;$218,000&lt;/td&gt;</pre>
+            <p>
+                Full setup instructions, the exact attribute contract, and a worked DAX example are in the
+                project's documentation on GitHub.
+            </p>
+            <div class="cta-row">
+                <a class="btn btn-primary" href="https://github.com/andyocnz/HTML-Export-Viewer-PowerBI-Visual" target="_blank" rel="noopener">View on GitHub</a>
+                <a class="btn btn-secondary" href="https://github.com/andyocnz/HTML-Export-Viewer-PowerBI-Visual/blob/main/README.md" target="_blank" rel="noopener">Read the documentation</a>
+            </div>
+        </section>
+
+        <section id="privacy">
+            <h2>Privacy</h2>
+            <div class="privacy-box">
+                <p><strong>This visual does not collect, store, or transmit any data.</strong> It does not make
+                network requests of any kind, does not use telemetry or analytics, and does not communicate
+                with any external service.</p>
+                <p>
+                    The visual receives one thing: the text of a single DAX measure bound to its "HTML content"
+                    data role, exactly as any other Power BI visual receives the fields bound to it. It renders
+                    that content inside the report, and &mdash; only when the report user clicks an export
+                    button, and only if the Power BI tenant's "Allow downloads from custom visuals" setting
+                    permits it &mdash; converts the currently displayed content into a PDF, Excel, or Word
+                    file, saved to the user's own device via Power BI's own built-in download mechanism. No
+                    data leaves the Power BI environment through this visual at any point.
+                </p>
+                <p>
+                    The visual requests exactly one Power BI privilege, <code class="inline">ExportContent</code>,
+                    required to save the exported file. No other privilege is requested.
+                </p>
+                <p>Last updated: 2026-09-11. Questions: <a href="mailto:info@pbiwise.com">info@pbiwise.com</a>.</p>
+            </div>
+        </section>
+
+        <section id="support">
+            <h2>Support</h2>
+            <p>
+                Questions, bug reports, or feature requests: <a href="mailto:info@pbiwise.com">info@pbiwise.com</a>.
+            </p>
+        </section>
+
+    </div>
+
+    <footer>
+        &copy; 2026 PBIwise &mdash; <a href="index.html">pbiwise.com</a> &mdash; <a href="contact.html">Contact</a>
+    </footer>
+
+</body>
+</html>
