@@ -8,6 +8,10 @@
         <link rel="icon" href="images/favicon.png" type="image/png" sizes="any">
         <link rel="icon" href="images/favicon.svg" type="image/svg+xml">         
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
     <style>
         * {
             margin: 0;
@@ -16,28 +20,43 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            color: #3d4456;
             background: #f0f2f5;
             height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
+        button, input, select, textarea { font-family: inherit; }
+
+        /* Site header (shared with HTML Export Viewer and Games pages) */
+        header.site { background: #fff; border-bottom: 1px solid #e6e9ee; flex-shrink: 0; }
+        header.site .in { padding: 0 20px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+        header.site nav a { color: #5b6672; text-decoration: none; font-size: 14px; margin-left: 20px; }
+        header.site nav a:hover { color: #141a2e; }
+        header.site nav a.cta { background: #4567ed; color: #fff; padding: 8px 18px; border-radius: 999px; font-weight: 500; }
+        header.site nav a.cta:hover { background: #3654d1; color: #fff; }
+        @media (max-width: 640px) { header.site nav a:not(.cta) { display: none; } }
+
         .header {
-            background: #2c3e50;
-            color: white;
-            padding: 15px 20px;
-            text-align: center;
+            background: #fff;
+            border-bottom: 1px solid #e6e9ee;
+            padding: 14px 20px;
+            flex-shrink: 0;
         }
 
         .header h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #141a2e;
+            margin-bottom: 2px;
         }
 
         .header p {
             font-size: 13px;
-            opacity: 0.9;
+            color: #5b6672;
         }
 
         .main {
@@ -98,25 +117,25 @@
             margin-bottom: 20px;
             padding: 15px;
             background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid #3498db;
+            border-radius: 14px;
+            border: 1px solid #e6e9ee;
         }
 
         .control-group.highlight {
-            border-left-color: #e74c3c;
+            border-color: #f5c2c0;
             background: #fff5f5;
         }
 
         .control-group h3 {
             margin-bottom: 12px;
-            color: #2c3e50;
+            color: #141a2e;
             font-size: 16px;
         }
 
         button {
             padding: 10px 15px;
             border: none;
-            border-radius: 5px;
+            border-radius: 999px;
             cursor: pointer;
             font-weight: 500;
             margin: 2px;
@@ -125,12 +144,12 @@
         }
 
         .btn-primary {
-            background: #3498db;
+            background: #4567ed;
             color: white;
         }
 
         .btn-primary:hover {
-            background: #2980b9;
+            background: #3654d1;
         }
 
         .btn-success {
@@ -170,12 +189,12 @@
         }
 
         .btn-info {
-            background: #16a085;
+            background: #141a2e;
             color: white;
         }
 
         .btn-info:hover {
-            background: #138d75;
+            background: #2a3350;
         }
 
         .mode-selector {
@@ -204,7 +223,7 @@
             display: block;
             margin-bottom: 5px;
             font-size: 13px;
-            color: #2c3e50;
+            color: #141a2e;
             font-weight: 500;
         }
 
@@ -273,7 +292,7 @@
         }
 
         .badge-count {
-            background: #3498db;
+            background: #4567ed;
             color: white;
         }
 
@@ -293,7 +312,7 @@
 
         .name-dialog h3 {
             margin-bottom: 15px;
-            color: #2c3e50;
+            color: #141a2e;
         }
 
         .name-dialog input {
@@ -356,7 +375,7 @@
 
         .area-name {
             font-weight: 600;
-            color: #2c3e50;
+            color: #141a2e;
         }
 
         .area-points {
@@ -388,6 +407,8 @@
     </style>
 </head>
 <body>
+    <header class="site"><div class="in"><a href="index.html"><img src="images/demo-slick/logo-dark.svg" alt="PBIwise" width="106" height="36"></a><nav><a href="index.html">Home</a><a href="html-export-viewer.html">HTML Export Viewer</a><a href="contact.html" class="cta">Get in touch</a></nav></div></header>
+
     <div class="header">
         <h1>Multi-Area Auto-Detect Builder</h1>
         <p>Detect, name, and export 200+ regions for Power BI Synoptic Designer</p>
