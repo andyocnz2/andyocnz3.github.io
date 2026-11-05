@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Games · PBIwise</title>
+<title>Apps &amp; Games · PBIwise</title>
 <meta name="description" content="Games by PBIwise">
 <link rel="icon" href="/images/favicon.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,6 +35,11 @@ a{color:var(--accent)}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
 .game{display:flex;gap:14px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;text-decoration:none;color:var(--ink)}
 .game img{width:64px;height:64px;border-radius:14px}
+.game img.light{border:1px solid var(--line)}
+.game:hover{border-color:var(--accent)}
+.game b .ext{display:inline;font-size:14px;color:var(--muted);font-weight:500}
+h2.group{font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+.grid + h2.group{margin-top:32px}
 .game b{display:block;font-size:17px;font-weight:600}.game span{color:var(--muted);font-size:13.5px}
 footer{border-top:1px solid var(--line);background:#fff}
 footer .in{padding:22px 20px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
@@ -45,7 +50,11 @@ footer a{color:var(--muted)}
 <body>
 <header><div class="in"><a href="/"><img src="/images/demo-slick/logo-dark.svg" alt="PBIwise" width="106" height="36"></a><nav><a href="/">Home</a><a href="/games/">Games</a><a href="/contact.html" class="cta">Get in touch</a></nav></div></header>
 <main>
-<h1 style="margin-bottom:6px">Games</h1><p class="sub" style="margin-bottom:24px">Made in Orewa, New Zealand by OCNZ Venture Limited.</p><div class="grid"><a class="game" href="/games/dustwing/"><img src="/games/dustwing/icon.png" alt=""><div><b>Dustwing</b><span>Arcade air combat for iPhone and iPad</span></div></a><a class="game" href="/games/overrun/"><img src="/games/overrun/icon.png" alt=""><div><b>Overrun</b><span>Co-op robot-wave shooter for iPhone and iPad</span></div></a><a class="game" href="/games/paper-tanks/"><img src="/games/paper-tanks/icon.png" alt=""><div><b>Paper Tanks</b><span>Ink and fold tank battle for iPhone and iPhone Duo</span></div></a></div>
+<h1 style="margin-bottom:6px">Apps &amp; Games</h1><p class="sub" style="margin-bottom:28px">Made in Orewa, New Zealand by OCNZ Venture Limited.</p>
+<h2 class="group">Learning apps</h2>
+<div class="grid"><a class="game" href="https://www.mathx.nz/" target="_blank" rel="noopener"><img src="/images/apps/mathx.png" alt=""><div><b>MathX <span class="ext" aria-hidden="true">&#8599;</span></b><span>Free NZ curriculum maths practice, Years 6–13</span></div></a><a class="game" href="https://musicx.nz/" target="_blank" rel="noopener"><img src="/images/apps/musicx.png" alt="" class="light"><div><b>MusicX <span class="ext" aria-hidden="true">&#8599;</span></b><span>Interactive music theory and aural practice</span></div></a></div>
+<h2 class="group">Games</h2>
+<div class="grid"><a class="game" href="/games/dustwing/"><img src="/games/dustwing/icon.png" alt=""><div><b>Dustwing</b><span>Arcade air combat for iPhone and iPad</span></div></a><a class="game" href="/games/overrun/"><img src="/games/overrun/icon.png" alt=""><div><b>Overrun</b><span>Co-op robot-wave shooter for iPhone and iPad</span></div></a><a class="game" href="/games/paper-tanks/"><img src="/games/paper-tanks/icon.png" alt=""><div><b>Paper Tanks</b><span>Ink and fold tank battle for iPhone and iPhone Duo</span></div></a></div>
 </main>
 <footer><div class="in"><span>© 2026 OCNZ Venture Limited · PBIwise</span><span><a href="mailto:info@pbiwise.com">info@pbiwise.com</a></span></div></footer>
 </body>
