@@ -32,6 +32,19 @@
         <style>
             .step-num { font-size: 15px; font-weight: 600; letter-spacing: .08em; color: var(--color-primary-1); margin-bottom: 14px; }
             .step-card { height: 100%; margin-top: 0 !important; }
+            .project-card { background: #fff; border: 1px solid #e6eaf3; border-radius: 20px; padding: 44px; box-shadow: 0 10px 30px rgba(30, 45, 110, .06); }
+            .project-tag { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--color-primary-1); background: #eef2ff; border-radius: 30px; padding: 5px 12px; margin-bottom: 16px; }
+            .project-name { font-size: 28px; line-height: 1.2; font-weight: 600; color: #141a2e; margin-bottom: 24px; }
+            .project-stat b { display: block; font-size: 44px; line-height: 1; font-weight: 600; color: var(--color-primary-1); margin-bottom: 6px; }
+            .project-stat span { color: #4a5163; font-size: 15px; }
+            .project-results { list-style: none; margin: 28px 0 0; padding: 22px 24px; background: #f5f7ff; border-radius: 14px; }
+            .project-results li { display: flex; gap: 12px; color: #141a2e; font-weight: 500; font-size: 15px; line-height: 1.5; }
+            .project-results li + li { margin-top: 12px; }
+            .project-results li i { color: var(--color-primary-1); margin-top: 3px; flex-shrink: 0; }
+            .project-label { font-size: 13px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--color-primary-1); margin: 0 0 8px; }
+            .project-text { color: #3d4456; font-size: 16px; line-height: 1.7; margin: 0; }
+            .project-block + .project-block { margin-top: 28px; padding-top: 28px; border-top: 1px solid #eef0f5; }
+            @media (max-width: 767px) { .project-card { padding: 28px 22px; } .project-name { font-size: 23px; } .project-stat b { font-size: 36px; } }
             .hero-workflow-img { width: 100%; height: auto; filter: drop-shadow(0 8px 18px rgba(40, 55, 140, .12)); }
         </style>
 
@@ -401,8 +414,71 @@
             <div class="col-md-8 offset-md-2 text-center">                                                          
                 <h2 class="section-caption-slick mb-30 mb-sm-20">Selected Work</h2>
                 <h3 class="section-title mb-30">Featured Projects</h3>
-            </div>     
+            </div>
         </div>
+
+        <!-- AI Project Case Studies -->
+        <div class="mb-60 mb-sm-40">
+
+            <!-- Project: Trend & Sales Radar -->
+            <div class="project-card mb-30 wow fadeInUpShort">
+                <div class="row g-5">
+                    <div class="col-lg-5">
+                        <span class="project-tag">AI workflow</span>
+                        <h4 class="project-name">Trend &amp; Sales Radar</h4>
+                        <div class="project-stat">
+                            <b>$1M+</b>
+                            <span>a year in cross-sell, upsell and win-back opportunities found and ranked</span>
+                        </div>
+                        <ul class="project-results">
+                            <li><i class="mi-check"></i> Product picks for the buyers every morning, with no extra work</li>
+                            <li><i class="mi-check"></i> At-risk customers flagged before they stop ordering</li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="project-block">
+                            <h5 class="project-label">The problem</h5>
+                            <p class="project-text">The buyers spotted new products by scrolling social media, often after a trend had already peaked. Years of sales data sat unused, so the sales team couldn't see which customers were slipping away or who to offer new stock to.</p>
+                        </div>
+                        <div class="project-block">
+                            <h5 class="project-label">What we built</h5>
+                            <p class="project-text">An AI system that researches product trends every morning and matches each trend to the right customers, using the business's own sales history. Each salesperson gets a weekly call list with ready-to-send emails. A machine-learning model warns them about customers who are likely to stop ordering.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project: Lead Generation & Email Outreach -->
+            <div class="project-card wow fadeInUpShort">
+                <div class="row g-5">
+                    <div class="col-lg-5">
+                        <span class="project-tag">AI agent</span>
+                        <h4 class="project-name">Lead Generation &amp; Email Outreach</h4>
+                        <div class="project-stat">
+                            <b>200+ hours</b>
+                            <span>saved per month on prospecting, emails and follow-ups</span>
+                        </div>
+                        <ul class="project-results">
+                            <li><i class="mi-check"></i> New leads found and contacted every day with no manual work</li>
+                            <li><i class="mi-check"></i> Every reply tracked in one place, so no lead is missed</li>
+                            <li><i class="mi-check"></i> Outreach that follows anti-spam rules</li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="project-block">
+                            <h5 class="project-label">The problem</h5>
+                            <p class="project-text">Finding new leads meant hours of searching websites, copying contact details into spreadsheets, writing emails one by one, and trying to keep track of who had replied or needed a follow-up.</p>
+                        </div>
+                        <div class="project-block">
+                            <h5 class="project-label">What we built</h5>
+                            <p class="project-text">An AI agent that runs every day by itself. It finds new prospects from public sources, writes a personal email to each one, sends a follow-up, reads the replies, and records who is interested. A simple dashboard shows leads found, emails sent, replies and conversions. Built-in safeguards keep it compliant: a daily sending limit, no duplicate emails, and a one-click unsubscribe in every email.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- End AI Project Case Studies -->
 
         <!-- Portfolio Grid -->
         <div class="works-grid work-grid-3 work-grid-gut clearfix">
