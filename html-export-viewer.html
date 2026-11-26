@@ -69,6 +69,13 @@
         .btn-secondary { background: #fff; color: var(--ink); border-color: var(--line); }
         .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
 
+        .marketplace-link { display: inline-flex; align-items: center; gap: 12px; margin-top: 22px; padding: 12px 18px 12px 12px; background: #fff; border: 1px solid var(--line); border-radius: 14px; color: var(--ink); text-decoration: none; transition: border-color .2s, box-shadow .2s; }
+        .marketplace-link:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(20, 26, 46, .08); }
+        .marketplace-link img { display: block; width: 56px; height: 56px; border-radius: 8px; }
+        .marketplace-link span { display: flex; flex-direction: column; line-height: 1.4; }
+        .marketplace-link strong { font-size: 14px; font-weight: 600; }
+        .marketplace-link small { color: var(--muted); font-size: 12px; }
+
         footer.site { border-top: 1px solid var(--line); background: #fff; }
         footer.site .in { max-width: 900px; margin: 0 auto; padding: 22px 20px; color: var(--muted); font-size: 13px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
         footer.site a { color: var(--muted); }
@@ -84,6 +91,10 @@
         <div class="wrap">
             <span class="eyebrow">Power BI custom visual</span>            <h1>HTML Export Viewer</h1>
             <p class="tagline">A Power BI custom visual that exports a styled HTML table to PDF, Excel, or Word &mdash; with optional live, recalculating Excel formulas.</p>
+            <a class="marketplace-link" href="https://marketplace.microsoft.com/en-us/product/pbiwise.html-table-pdf-excel-export-viewer?tab=Overview" target="_blank" rel="noopener noreferrer">
+                <img src="images/html-export-viewer-icon.png" alt="">
+                <span><strong>Get it on Microsoft Marketplace</strong><small>HTML Table PDF Excel Export Viewer</small></span>
+            </a>
         </div>
     </div>
 
